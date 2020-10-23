@@ -37,8 +37,9 @@ class SignupTextField extends StatelessWidget {
         ),
         suffixText: isEmail ? "@skcet.ac.in" : null,
         suffixStyle: TextStyle(
-          fontSize: 20,
+          fontSize: 18,
           color: Colors.blueGrey[700],
+          fontStyle: FontStyle.italic,
         ),
         isDense: true,
         contentPadding: EdgeInsets.symmetric(

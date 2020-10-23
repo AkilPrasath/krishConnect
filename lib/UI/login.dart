@@ -1,94 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:lottie/lottie.dart';
 
-class SignupScreen extends StatefulWidget {
-  static final String id = "Signup Screen";
+class LoginScreen extends StatefulWidget {
+  static final String id = "Login Screen";
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   double screenWidth;
   double screenHeight;
+  UserMode userMode;
   String _password, _email;
   bool load = false;
   final _formKey = GlobalKey<FormState>();
 
-  Future<void> alertEmailAlready(context) async {
-    await showDialog(
-      context: context,
-      child: AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.security,
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Text(
-              "Signup Error",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: "$_email@skcet.ac.in",
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 18,
-                ),
-              ),
-              TextSpan(
-                text: " is already in use !",
-                style: TextStyle(
-                  color: Colors.grey[800],
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        insetPadding: EdgeInsets.symmetric(horizontal: 20),
-        actions: [
-          FlatButton(
-            textColor: Colors.blue,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(
-              "Login",
-              style: TextStyle(
-                color: Colors.blue,
-              ),
-            ),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Close"),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
-      useSafeArea: true,
-    );
+  login(context) async {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      LoginResult loginResult =
+          await Authentication().signIn(_email, _password);
+      if (loginResult == LoginResult.success) {
+        //lazy load get_it user instance
+        //check data
+        // if data is empty go to data page
+        // if data is ready go to dashboard page
+      }
+    }
   }
 
   @override
@@ -120,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: Text(
-                        "Create\nAccount",
+                        "Sign\nIn",
                         style: GoogleFonts.aBeeZee(
                           fontSize: 30,
                           fontWeight: FontWeight.w600,
@@ -142,6 +87,16 @@ class _SignupScreenState extends State<SignupScreen> {
                                 labelText: "Email",
                                 onSaved: (value) {
                                   _email = value;
+                                  RegExp studentRegex =
+                                      RegExp(r"[0-9]{2}[a-zA-Z]{4}[0-9]{3}");
+                                  if (studentRegex.stringMatch(value) == null) {
+                                    userMode = UserMode.staff;
+                                  } else if (studentRegex
+                                          .stringMatch(value)
+                                          .length ==
+                                      value.length) {
+                                    userMode = UserMode.student;
+                                  }
                                 },
                                 validator: (value) {
                                   RegExp emailRegex =
@@ -183,66 +138,16 @@ class _SignupScreenState extends State<SignupScreen> {
                             Builder(builder: (context) {
                               return RocketButton(
                                 screenWidth: screenWidth,
-                                onTap: false
-                                    ? () {
-                                        Navigator.pushNamed(
-                                            context, LoginScreen.id);
-                                      }
-                                    : () async {
-                                        if (_formKey.currentState.validate()) {
-                                          _formKey.currentState.save();
-                                          var connectivityResult =
-                                              await (Connectivity()
-                                                  .checkConnectivity());
-                                          if (connectivityResult ==
-                                              ConnectivityResult.none) {
-                                            Scaffold.of(context)
-                                                .showSnackBar(SnackBar(
-                                              content: Text(
-                                                  "Please Check your Internet Connection!"),
-                                              duration: Duration(seconds: 2),
-                                            ));
-                                            return;
-                                          }
-                                          setState(() {
-                                            load = true;
-                                          });
-                                          SignupResult signupResult =
-                                              await Authentication().signUp(
-                                                  _email + "@skcet.ac.in",
-                                                  _password);
-                                          setState(() {
-                                            load = false;
-                                          });
-                                          if (signupResult ==
-                                              SignupResult.emailalreadyinuse) {
-                                            await alertEmailAlready(context);
-                                          } else if (signupResult ==
-                                              SignupResult.success) {
-                                            Future.delayed(
-                                                    Duration(milliseconds: 400))
-                                                .then((value) {
-                                              Navigator.pop(context);
-                                              Navigator.pushNamed(
-                                                  context, LoginScreen.id);
-                                            });
-                                          } else {
-                                            Scaffold.of(context)
-                                                .showSnackBar(SnackBar(
-                                              duration: Duration(seconds: 2),
-                                              content: Text(
-                                                  "Unable to create account. Please try again!"),
-                                            ));
-                                          }
-                                        }
-                                      },
+                                onTap: () {
+                                  login(context);
+                                },
                               );
                             }),
                             Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Center(
                                 child: Text(
-                                  "Sign Up",
+                                  "Sign In",
                                   style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w600,
@@ -262,7 +167,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Center(
                   child: AnimatedOpacity(
                     duration: Duration(
-                      milliseconds: 1000,
+                      milliseconds: 400,
                     ),
                     opacity: load ? 1 : 0,
                     child: Container(
