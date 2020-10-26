@@ -4,6 +4,8 @@ import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/main.dart';
+import 'package:krish_connect/UI/login.dart';
+import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
@@ -196,7 +198,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                                 VerifyEmailScreen(authenticate: authenticate,),
                                           ),
                                         );
-                                      }
+                                    }
                                     : () async {
                                         if (_formKey.currentState.validate()) {
                                           _formKey.currentState.save();

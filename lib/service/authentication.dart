@@ -8,6 +8,7 @@ class Authentication {
   Future<SignupResult> signUp(String email, String password) async {
     try {
       
+      UserCredential userCred;
 
       userCred = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -55,6 +56,7 @@ class Authentication {
   }
 
   Future<LoginResult>signIn(String email, String password) async {
+  signIn(String email, String password) async {
     try {
       UserCredential userCred = await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -79,4 +81,5 @@ class Authentication {
     }
     return LoginResult.success;
   }
+}
 }

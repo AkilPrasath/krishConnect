@@ -36,13 +36,14 @@ class RocketButton extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-            colors:  [
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
                 Color(0xffFF6A83),
                 Color(0xffF98875),
                 Color(0xffF3A866),
               ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              
             ),
           ),
           child: InkWell(

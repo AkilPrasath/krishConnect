@@ -244,6 +244,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               
+              Visibility(
+                visible: load,
+                child: Center(
+                  child: AnimatedOpacity(
+                    duration: Duration(
+                      milliseconds: 400,
+                    ),
+                    opacity: load ? 1 : 0,
+                    child: Container(
+                      color: Colors.white.withOpacity(0.5),
+                      height: screenHeight,
+                      child: Lottie.asset(
+                        "assets/lottie/mailLoading.json",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
