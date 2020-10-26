@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "402001888170",
+    "firebase_url": "https://krishnaconnect-11f81.firebaseio.com",
+    "project_id": "krishnaconnect-11f81",
+    "storage_bucket": "krishnaconnect-11f81.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:402001888170:android:ee9b86b63858adb8f9a1d3",
+        "android_client_info": {
+          "package_name": "com.example.krish_connect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "402001888170-sd816t623h9v8314mcf4ovjrret28buc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCW2_ybT5_elGjrPVMPQ3aO3uqtNihnVw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "402001888170-sd816t623h9v8314mcf4ovjrret28buc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
