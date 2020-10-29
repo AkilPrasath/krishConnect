@@ -1,10 +1,15 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:krish_connect/UI/dashboard.dart';
+import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/data/enums.dart';
+import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
+import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
 import 'package:lottie/lottie.dart';
@@ -19,11 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
   double screenWidth;
   double screenHeight;
   UserMode userMode;
-  String _password, _email;
+  String _password = "", _email = "";
   bool load = false;
   final _formKey = GlobalKey<FormState>();
 
- Future errorAlert(String text1,String text2)async{
+  Future errorAlert(String text1, String text2) async {
     await showDialog(
       context: context,
       child: AlertDialog(
@@ -47,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           text: TextSpan(
             children: [
               TextSpan(
-                text: text1+" ",
+                text: text1 + " ",
                 style: TextStyle(
                   color: Colors.red,
                   fontSize: 18,
@@ -67,22 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
         insetPadding: EdgeInsets.symmetric(horizontal: 20),
         actions: [
           FlatButton(
-            textColor: Colors.blue,
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text(
-              "Login",
-              style: TextStyle(
-                color: Colors.blue,
-              ),
-            ),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Close"),
+            child: Text("Okay"),
           ),
         ],
       ),
@@ -94,26 +87,46 @@ class _LoginScreenState extends State<LoginScreen> {
   login(context) async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      print(_email);
+      setState(() {
+        load = true;
+      });
       LoginResult loginResult =
           await getIt<Authentication>().signIn(_email, _password);
-          print("hereeeeeeeeeeeeeee");
-          print(loginResult);
-          if(loginResult==LoginResult.usernotfound){
-            print("the error has reached here");
-            await errorAlert("User not found for", _email);
+      setState(() {
+        load = false;
+      });
+      if (loginResult == LoginResult.usernotfound) {
+        print("the error has reached here");
+        await errorAlert("User not found for", _email);
+      } else if (loginResult == LoginResult.wrongpassword) {
+        await errorAlert("Incorrect Password for", _email);
+      } else if (loginResult == LoginResult.success) {
+        if (userMode == UserMode.student) {
+          print(_email.substring(0, 9));
+          Student student = await Student.create(_email.substring(0, 9));
+          print(student);
+          if (student.isEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailsScreen(),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DashBoard(),
+              ),
+            );
           }
-      else if (loginResult == LoginResult.success) {
-        print("success");
-        //lazy load get_it user instance
-        //check data
-        // if data is empty go to data page
-        // if data is ready go to dashboard page
+        } else {
+          // go to staff
+          print("stafffffff");
+        }
       }
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -165,9 +178,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isPassword: false,
                                 labelText: "Email",
                                 onSaved: (value) {
-                                  _email = value+"@skcet.ac.in";
+                                  _email = value + "@skcet.ac.in";
 
-                                  
                                   RegExp studentRegex =
                                       RegExp(r"[0-9]{2}[a-zA-Z]{4}[0-9]{3}");
                                   if (studentRegex.stringMatch(value) == null) {
@@ -182,7 +194,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 validator: (value) {
                                   RegExp emailRegex =
                                       RegExp(r"^([a-zA-Z0-9_\-\.]+)");
-
+                                  if (value == null) {
+                                    value = "";
+                                  }
+                                  if (emailRegex.stringMatch(value) == null) {
+                                    return "Email cannot be empty!";
+                                  }
                                   if (!(emailRegex.stringMatch(value).length ==
                                       value.length)) {
                                     return "Check the email format!";
@@ -206,7 +223,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _password = value;
                                 },
                                 validator: (value) {
-                                  if (value.length <= 8) {
+                                  if (value == null) {
+                                    return "Password cannot be empty!";
+                                  }
+                                  if (value.length < 8) {
                                     return "Minimum 8 characters";
                                   }
                                   return null;
@@ -219,7 +239,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             Builder(builder: (context) {
                               return RocketButton(
                                 screenWidth: screenWidth,
-                                onTap: () {
+                                onTap: () async {
+                                  var connectivityResult = await (Connectivity()
+                                      .checkConnectivity());
+                                  if (connectivityResult ==
+                                      ConnectivityResult.none) {
+                                    Scaffold.of(context).showSnackBar(SnackBar(
+                                      content: Text(
+                                          "Please Check your Internet Connection!"),
+                                      duration: Duration(seconds: 2),
+                                    ));
+                                    return;
+                                  }
                                   login(context);
                                 },
                               );
@@ -243,26 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              
-              Visibility(
-                visible: load,
-                child: Center(
-                  child: AnimatedOpacity(
-                    duration: Duration(
-                      milliseconds: 400,
-                    ),
-                    opacity: load ? 1 : 0,
-                    child: Container(
-                      color: Colors.white.withOpacity(0.5),
-                      height: screenHeight,
-                      child: Lottie.asset(
-                        "assets/lottie/mailLoading.json",
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              MailLoading(load: load, screenHeight: screenHeight),
             ],
           ),
         ),

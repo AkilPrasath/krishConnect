@@ -7,8 +7,7 @@ class Authentication {
   //
   Future<SignupResult> signUp(String email, String password) async {
     try {
-      
-      UserCredential userCred;
+      // UserCredential userCred;
 
       userCred = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -27,36 +26,32 @@ class Authentication {
     return SignupResult.success;
   }
 
-  Future<bool> sendVerification() async{
+  Future<bool> sendVerification() async {
     try {
-        await userCred.user.sendEmailVerification();
-        print("Link is sent");
-        return true;
-     } catch (e) {
-        print("An error occured while trying to send email        verification");
-        print(e.message);
-        return false;
-     }
-     print("link is not sent");
-     return false;
-
+      await userCred.user.sendEmailVerification();
+      print("Link is sent");
+      return true;
+    } catch (e) {
+      print("An error occured while trying to send email        verification");
+      print(e);
+      return false;
+    }
+    print("link is not sent");
+    return false;
   }
 
-
- Future<bool> checkEmailVerified()async{
-   User user=_firebaseAuth.currentUser;
+  Future<bool> checkEmailVerified() async {
+    User user = _firebaseAuth.currentUser;
     await user.reload();
     print(user.emailVerified);
-    if(user.emailVerified){
+    if (user.emailVerified) {
       return true;
-    }
-    else{
+    } else {
       return false;
     }
   }
 
-  Future<LoginResult>signIn(String email, String password) async {
-  signIn(String email, String password) async {
+  Future<LoginResult> signIn(String email, String password) async {
     try {
       UserCredential userCred = await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -71,9 +66,9 @@ class Authentication {
           }
         }).toList();
         LoginResult authRes;
-         authResult.forEach((element) { 
-          if(element!=null){
-           authRes=element;
+        authResult.forEach((element) {
+          if (element != null) {
+            authRes = element;
           }
         });
         return authRes;
@@ -81,5 +76,4 @@ class Authentication {
     }
     return LoginResult.success;
   }
-}
 }

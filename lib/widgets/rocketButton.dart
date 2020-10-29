@@ -42,8 +42,10 @@ class RocketButton extends StatelessWidget {
                 Color(0xffFF6A83),
                 Color(0xffF98875),
                 Color(0xffF3A866),
+                // Colors.blue,
+                // Colors.blue[400],
+                // Colors.blue[200],
               ],
-              
             ),
           ),
           child: InkWell(

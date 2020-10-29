@@ -12,3 +12,16 @@ enum LoginResult {
   wrongpassword,
   success,
 }
+enum Department {
+  cse,
+  ece,
+  eee,
+  it,
+  mech,
+  mct,
+  civil,
+}
+enum UserMode {
+  student,
+  staff,
+}

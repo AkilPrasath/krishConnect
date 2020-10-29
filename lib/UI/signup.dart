@@ -9,6 +9,7 @@ import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
+import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
 import 'package:connectivity/connectivity.dart';
@@ -26,7 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
   double screenHeight;
   String _password, _email;
   bool load = false;
-  Authentication authenticate=new Authentication();
+  Authentication authenticate = new Authentication();
   final _formKey = GlobalKey<FormState>();
 
   Future<void> alertEmailAlready(context) async {
@@ -75,7 +76,7 @@ class _SignupScreenState extends State<SignupScreen> {
           FlatButton(
             textColor: Colors.blue,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, LoginScreen.id);
             },
             child: Text(
               "Login",
@@ -153,6 +154,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                   RegExp emailRegex =
                                       RegExp(r"^([a-zA-Z0-9_\-\.]+)");
 
+                                  if (emailRegex.stringMatch(value) == null) {
+                                    return "Email cannot be empty!";
+                                  }
                                   if (!(emailRegex.stringMatch(value).length ==
                                       value.length)) {
                                     return "Check the email format!";
@@ -176,7 +180,10 @@ class _SignupScreenState extends State<SignupScreen> {
                                   _password = value;
                                 },
                                 validator: (value) {
-                                  if (value.length <= 8) {
+                                  if (value == null) {
+                                    return "Password cannot be empty";
+                                  }
+                                  if (value.length < 8) {
                                     return "Minimum 8 characters";
                                   }
                                   return null;
@@ -189,71 +196,62 @@ class _SignupScreenState extends State<SignupScreen> {
                             Builder(builder: (context) {
                               return RocketButton(
                                 screenWidth: screenWidth,
-                                onTap: false
-                                    ? () async{await authenticate.signUp(_email, _password);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                VerifyEmailScreen(authenticate: authenticate,),
-                                          ),
-                                        );
+                                onTap: () async {
+                                  if (_formKey.currentState.validate()) {
+                                    _formKey.currentState.save();
+                                    var connectivityResult =
+                                        await (Connectivity()
+                                            .checkConnectivity());
+                                    if (connectivityResult ==
+                                        ConnectivityResult.none) {
+                                      Scaffold.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(
+                                            "Please Check your Internet Connection!"),
+                                        duration: Duration(seconds: 2),
+                                      ));
+                                      return;
                                     }
-                                    : () async {
-                                        if (_formKey.currentState.validate()) {
-                                          _formKey.currentState.save();
-                                          var connectivityResult =
-                                              await (Connectivity()
-                                                  .checkConnectivity());
-                                          if (connectivityResult ==
-                                              ConnectivityResult.none) {
-                                            Scaffold.of(context)
-                                                .showSnackBar(SnackBar(
-                                              content: Text(
-                                                  "Please Check your Internet Connection!"),
-                                              duration: Duration(seconds: 2),
-                                            ));
-                                            return;
-                                          }
-                                          setState(() {
-                                            load = true;
-                                          });
-                                          SignupResult signupResult =
-                                              await getIt<Authentication>().signUp(
-                                                  _email + "@skcet.ac.in",
-                                                  _password);
-                                          setState(() {
-                                            load = false;
-                                          });
-                                          if (signupResult ==
-                                              SignupResult.emailalreadyinuse) {
-                                            await alertEmailAlready(context);
-                                          } else if (signupResult ==
-                                              SignupResult.success) {
-                                            Future.delayed(
-                                                    Duration(milliseconds: 400))
-                                                .then(
-                                              (value) {
-                                                Navigator.pop(context);
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        VerifyEmailScreen(authenticate: authenticate,),
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          } else {
-                                            Scaffold.of(context)
-                                                .showSnackBar(SnackBar(
-                                              duration: Duration(seconds: 2),
-                                              content: Text(
-                                                  "Unable to create account. Please try again!"),
-                                            ));
-                                          }
-                                        }
-                                      },
+                                    setState(() {
+                                      load = true;
+                                    });
+                                    SignupResult signupResult =
+                                        await getIt<Authentication>().signUp(
+                                            _email + "@skcet.ac.in", _password);
+                                    setState(() {
+                                      load = false;
+                                    });
+                                    if (signupResult ==
+                                        SignupResult.emailalreadyinuse) {
+                                      await alertEmailAlready(context);
+                                    } else if (signupResult ==
+                                        SignupResult.success) {
+                                      Future.delayed(
+                                              Duration(milliseconds: 400))
+                                          .then(
+                                        (value) {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VerifyEmailScreen(
+                                                authenticate: authenticate,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      Scaffold.of(context)
+                                          .showSnackBar(SnackBar(
+                                        duration: Duration(seconds: 2),
+                                        content: Text(
+                                            "Unable to create account. Please try again!"),
+                                      ));
+                                    }
+                                  }
+                                },
                               );
                             }),
                             Padding(
@@ -275,25 +273,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ],
                 ),
               ),
-              Visibility(
-                visible: load,
-                child: Center(
-                  child: AnimatedOpacity(
-                    duration: Duration(
-                      milliseconds: 1000,
-                    ),
-                    opacity: load ? 1 : 0,
-                    child: Container(
-                      color: Colors.white.withOpacity(0.5),
-                      height: screenHeight,
-                      child: Lottie.asset(
-                        "assets/lottie/mailLoading.json",
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              MailLoading(load: load, screenHeight: screenHeight),
             ],
           ),
         ),

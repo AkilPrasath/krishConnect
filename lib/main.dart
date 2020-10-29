@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/signup.dart';
 
@@ -13,10 +14,11 @@ void main() async {
   setupLocator();
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    initialRoute: SignupScreen.id,
+    initialRoute: DetailsScreen.id,
     routes: {
       SignupScreen.id: (context) => SignupScreen(),
       LoginScreen.id: (context) => LoginScreen(),
+      DetailsScreen.id: (context) => DetailsScreen(),
     },
   ));
 }
