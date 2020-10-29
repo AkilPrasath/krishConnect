@@ -1,9 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:krish_connect/UI/dashboard.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
+import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/signup.dart';
+import 'package:krish_connect/UI/splashScreen.dart';
 
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
@@ -14,11 +17,14 @@ void main() async {
   setupLocator();
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    initialRoute: DetailsScreen.id,
+    initialRoute: SplashScreen.id,
     routes: {
+      SplashScreen.id: (context) => SplashScreen(),
       SignupScreen.id: (context) => SignupScreen(),
       LoginScreen.id: (context) => LoginScreen(),
       DetailsScreen.id: (context) => DetailsScreen(),
+      VerifyEmailScreen.id: (context) => VerifyEmailScreen(),
+      DashBoard.id: (context) => DashBoard(),
     },
   ));
 }

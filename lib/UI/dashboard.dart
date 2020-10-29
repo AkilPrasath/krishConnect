@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DashBoard extends StatefulWidget {
+  static final String id = "dashboard";
   @override
   _DashBoardState createState() => _DashBoardState();
 }

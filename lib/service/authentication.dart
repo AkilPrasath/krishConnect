@@ -2,14 +2,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:krish_connect/data/enums.dart';
 
 class Authentication {
-  UserCredential userCred;
+  // UserCredential userCred;
+  User currentUser;
   FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  //
+  Authentication() {
+    currentUser = _firebaseAuth.currentUser;
+  }
+
+  Future<void> reloadUser() async {
+    await _firebaseAuth.currentUser.reload();
+    currentUser = _firebaseAuth.currentUser;
+  }
+
   Future<SignupResult> signUp(String email, String password) async {
     try {
-      // UserCredential userCred;
-
-      userCred = await _firebaseAuth.createUserWithEmailAndPassword(
+      await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
     } catch (ex) {
       if (ex.runtimeType == FirebaseAuthException) {
@@ -28,7 +35,8 @@ class Authentication {
 
   Future<bool> sendVerification() async {
     try {
-      await userCred.user.sendEmailVerification();
+      await reloadUser();
+      await currentUser.sendEmailVerification();
       print("Link is sent");
       return true;
     } catch (e) {
@@ -36,15 +44,13 @@ class Authentication {
       print(e);
       return false;
     }
-    print("link is not sent");
     return false;
   }
 
   Future<bool> checkEmailVerified() async {
-    User user = _firebaseAuth.currentUser;
-    await user.reload();
-    print(user.emailVerified);
-    if (user.emailVerified) {
+    await reloadUser();
+    print(currentUser.emailVerified);
+    if (currentUser.emailVerified) {
       return true;
     } else {
       return false;
@@ -53,7 +59,7 @@ class Authentication {
 
   Future<LoginResult> signIn(String email, String password) async {
     try {
-      UserCredential userCred = await _firebaseAuth.signInWithEmailAndPassword(
+      await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
     } catch (ex) {
       if (ex.runtimeType == FirebaseAuthException) {

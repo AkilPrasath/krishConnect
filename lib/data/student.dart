@@ -47,6 +47,20 @@ class Student {
     return student;
   }
 
+  Future<void> updateDetails(Map json) async {
+    department = json["department"];
+    name = json["name"];
+    location = json["location"];
+    locationPrivacy = json["locationPrivacy"];
+    phoneNumber = json["phoneNumber"];
+    rollno = json["rollno"];
+    section = json["section"];
+    semester = json["semester"];
+    await Future.delayed(Duration(seconds: 1)).then((value) {
+      return;
+    });
+  }
+
   @override
   String toString() {
     // TODO: implement toString

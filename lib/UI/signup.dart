@@ -190,8 +190,23 @@ class _SignupScreenState extends State<SignupScreen> {
                                 },
                               ),
                             ),
-                            SizedBox(
-                              height: 0.05 * screenHeight,
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushReplacementNamed(
+                                    context, LoginScreen.id);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32.0),
+                                child: Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
                             ),
                             Builder(builder: (context) {
                               return RocketButton(
@@ -235,9 +250,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  VerifyEmailScreen(
-                                                authenticate: authenticate,
-                                              ),
+                                                  VerifyEmailScreen(),
                                             ),
                                           );
                                         },

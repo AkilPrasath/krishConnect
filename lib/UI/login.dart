@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:krish_connect/UI/dashboard.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
+import 'package:krish_connect/UI/emailVerify.dart';
+import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
@@ -101,8 +103,11 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (loginResult == LoginResult.wrongpassword) {
         await errorAlert("Incorrect Password for", _email);
       } else if (loginResult == LoginResult.success) {
+        if (!getIt<Authentication>().currentUser.emailVerified) {
+          Navigator.pushReplacementNamed(context, VerifyEmailScreen.id);
+          return;
+        }
         if (userMode == UserMode.student) {
-          print(_email.substring(0, 9));
           Student student = await Student.create(_email.substring(0, 9));
           print(student);
           if (student.isEmpty) {
@@ -235,6 +240,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             SizedBox(
                               height: 0.05 * screenHeight,
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushReplacementNamed(
+                                    context, SignupScreen.id);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32.0),
+                                child: Text(
+                                  "Signup",
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
                             ),
                             Builder(builder: (context) {
                               return RocketButton(
