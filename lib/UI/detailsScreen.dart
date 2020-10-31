@@ -1,10 +1,14 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:krish_connect/UI/dashboard.dart';
+import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
+import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
+import 'package:lottie/lottie.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -22,6 +26,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   int currentSemester;
   bool privacySwitchValue;
   bool load;
+
   int currentSection;
   final _formKey = GlobalKey<FormState>();
   findDepartment(String code) {
@@ -44,6 +49,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     super.initState();
     email = getIt<Authentication>().currentUser.email;
     name = "";
+
     phoneNumber = "";
     currentSemester = 1;
     currentSection = 1;
@@ -51,11 +57,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
     load = false;
   }
 
-  saveDetails() {
+  Future<bool> saveDetails() async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      //see students class it is not implemented
+
+      Student student = await getIt.getAsync<Student>();
+      await student.updateDetails({
+        "department": findDepartment(email.substring(4, 6)),
+        "name": name,
+        "location": "",
+        "locationPrivacy": privacySwitchValue,
+        "phoneNumber": phoneNumber,
+        "rollno": email.substring(0, 9),
+        "section": ["A", "B", "C"][currentSection],
+        "semester": currentSemester,
+      });
+      return true;
     }
+    return false;
+  }
+
+  alertSuccess(context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      child: AlertDialog(
+        title: Text("Update Success!"),
+        content: Lottie.asset("assets/lottie/verifyAnimation.json"),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, DashBoard.id);
+            },
+            child: Text("Go to Dashboard"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -274,14 +312,28 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                       .checkConnectivity());
                                   if (connectivityResult ==
                                       ConnectivityResult.none) {
-                                    Scaffold.of(context).showSnackBar(SnackBar(
-                                      content: Text(
-                                          "Please Check your Internet Connection!"),
-                                      duration: Duration(seconds: 2),
-                                    ));
+                                    Scaffold.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            "Please Check your Internet Connection!"),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                     return;
                                   }
-                                  saveDetails();
+                                  setState(() {
+                                    load = true;
+                                  });
+                                  if (await saveDetails()) {
+                                    //success
+                                    setState(() {
+                                      load = false;
+                                    });
+                                    alertSuccess(context);
+                                  }
+                                  setState(() {
+                                    load = false;
+                                  });
                                 },
                                 screenWidth: screenWidth,
                               ),

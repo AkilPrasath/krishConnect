@@ -43,11 +43,15 @@ class Student {
     );
   }
   static Future<Student> create(String roll) async {
-    Student student = await getIt<Database>().getStudent(roll);
-    return student;
+    Map<String, dynamic> json = await getIt<Database>().getStudent(roll);
+    if (json == null) {
+      return Student.empty();
+    }
+    return Student.fromJson(json);
   }
 
   Future<void> updateDetails(Map json) async {
+    isEmpty = false;
     department = json["department"];
     name = json["name"];
     location = json["location"];
@@ -56,9 +60,8 @@ class Student {
     rollno = json["rollno"];
     section = json["section"];
     semester = json["semester"];
-    await Future.delayed(Duration(seconds: 1)).then((value) {
-      return;
-    });
+    await getIt<Database>().updateInfo();
+    return;
   }
 
   @override

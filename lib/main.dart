@@ -7,6 +7,7 @@ import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/UI/splashScreen.dart';
+import 'package:krish_connect/data/student.dart';
 
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
@@ -34,7 +35,8 @@ void setupLocator() {
   getIt.registerSingleton(Authentication());
   getIt.registerSingleton(Database());
 
-  // getIt.registerLazySingleton<Future<Person>>(() async {
-  //   return await Person.create();
-  // });
+  getIt.registerLazySingletonAsync<Student>(() async {
+    return Student.create(
+        getIt<Authentication>().currentUser.email.substring(0, 9));
+  });
 }

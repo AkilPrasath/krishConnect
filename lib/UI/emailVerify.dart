@@ -202,8 +202,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       }
     }
     if (flag == 1) {
-      await Student.create(
-          getIt<Authentication>().currentUser.email.substring(0, 9));
       Navigator.pushReplacementNamed(context, DetailsScreen.id);
     } else {
       setState(() {

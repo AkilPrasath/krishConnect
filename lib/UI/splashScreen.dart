@@ -31,8 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacementNamed(context, LoginScreen.id);
       } else {
         if (currentUser.emailVerified) {
-          Student student =
-              await Student.create(currentUser.email.substring(0, 9));
+          Student student = await getIt.getAsync<Student>();
+          // await Student.create(currentUser.email.substring(0, 9));
           if (!student.isEmpty) {
             Navigator.pushReplacementNamed(context, DashBoard.id);
           } else {

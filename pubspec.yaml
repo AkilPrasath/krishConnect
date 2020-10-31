@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -36,7 +36,9 @@ dependencies:
   google_fonts: ^1.1.1
   connectivity: ^1.0.0
   numberpicker: ^1.2.1
+  flutter_swiper: ^1.1.6
   lottie: ^0.6.0
+  flutter_phone_direct_caller: ^1.0.1
 
 
 dev_dependencies:

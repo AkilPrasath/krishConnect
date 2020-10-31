@@ -103,12 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (loginResult == LoginResult.wrongpassword) {
         await errorAlert("Incorrect Password for", _email);
       } else if (loginResult == LoginResult.success) {
+        await getIt<Authentication>().reloadUser();
         if (!getIt<Authentication>().currentUser.emailVerified) {
           Navigator.pushReplacementNamed(context, VerifyEmailScreen.id);
           return;
         }
         if (userMode == UserMode.student) {
-          Student student = await Student.create(_email.substring(0, 9));
+          Student student = await getIt.getAsync<Student>();
+          // Student.create(_email.substring(0, 9));
           print(student);
           if (student.isEmpty) {
             Navigator.push(
