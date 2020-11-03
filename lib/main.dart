@@ -1,10 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:krish_connect/UI/dashboard.dart';
+
+import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
+import 'package:krish_connect/UI/requestsStudent.dart';
 import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/UI/splashScreen.dart';
 import 'package:krish_connect/data/student.dart';
@@ -25,7 +27,8 @@ void main() async {
       LoginScreen.id: (context) => LoginScreen(),
       DetailsScreen.id: (context) => DetailsScreen(),
       VerifyEmailScreen.id: (context) => VerifyEmailScreen(),
-      DashBoard.id: (context) => DashBoard(),
+      DashboardScreen.id: (context) => DashboardScreen(),
+      RequestStudent.id: (context) => RequestStudent(),
     },
   ));
 }

@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:krish_connect/UI/dashboard.dart';
+
+import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/UI/signup.dart';
+
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
@@ -19,7 +20,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     checkUser();
   }
@@ -32,9 +32,9 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         if (currentUser.emailVerified) {
           Student student = await getIt.getAsync<Student>();
-          // await Student.create(currentUser.email.substring(0, 9));
+
           if (!student.isEmpty) {
-            Navigator.pushReplacementNamed(context, DashBoard.id);
+            Navigator.pushReplacementNamed(context, DashboardScreen.id);
           } else {
             Navigator.pushReplacementNamed(context, DetailsScreen.id);
           }

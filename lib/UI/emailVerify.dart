@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/UI/signup.dart';
-import 'package:krish_connect/data/student.dart';
+
 import 'package:krish_connect/service/authentication.dart';
-import 'package:krish_connect/service/database.dart';
+
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:lottie/lottie.dart';
 

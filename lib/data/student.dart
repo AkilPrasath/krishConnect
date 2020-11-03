@@ -1,4 +1,3 @@
-import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/database.dart';
 
@@ -66,7 +65,6 @@ class Student {
 
   @override
   String toString() {
-    // TODO: implement toString
     return this.name.toString() +
         this.rollno.toString() +
         this.department.toString() +

@@ -3,9 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomExpandableListTile extends StatelessWidget {
-  const CustomExpandableListTile({
-    Key key,
-  }) : super(key: key);
+  const CustomExpandableListTile({Key key, this.studentMap}) : super(key: key);
+  final Map<String, dynamic> studentMap;
 
   TextStyle _headingStyle() {
     return GoogleFonts.workSans(
@@ -19,21 +18,37 @@ class CustomExpandableListTile extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: Text(
-          "OD",
+          "${studentMap["type"]}",
           style: GoogleFonts.montserrat(
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
-        title: Text("Project"),
+        title: Text("${studentMap["reason"]}"),
         subtitle: Row(
           children: [
-            FaIcon(
-              FontAwesomeIcons.checkCircle,
-              color: Colors.green,
-              size: 15,
-            ),
-            Text("  Granted"),
+            studentMap["response"] == 0
+                ? FaIcon(
+                    FontAwesomeIcons.hourglass,
+                    size: 15,
+                    color: Colors.amber,
+                  )
+                : (studentMap["response"] == 1)
+                    ? FaIcon(
+                        FontAwesomeIcons.solidCheckCircle,
+                        size: 15,
+                        color: Colors.green,
+                      )
+                    : FaIcon(
+                        FontAwesomeIcons.ban,
+                        size: 15,
+                        color: Colors.red,
+                      ),
+            studentMap["response"] == 0
+                ? Text("  Pending")
+                : (studentMap["response"] == 1)
+                    ? Text("  Accepted")
+                    : Text("  Rejected"),
           ],
         ),
         onExpansionChanged: (isExpanded) {},
@@ -54,8 +69,10 @@ class CustomExpandableListTile extends StatelessWidget {
                           "Duration     :  ",
                           style: _headingStyle(),
                         ),
-                        Text(
-                          "Oct 31 - Nov 2",
+                        Flexible(
+                          child: Text(
+                            "${studentMap["date"]}",
+                          ),
                         ),
                       ],
                     ),
@@ -69,8 +86,10 @@ class CustomExpandableListTile extends StatelessWidget {
                           "Addressed  :  ",
                           style: _headingStyle(),
                         ),
-                        Text(
-                          "Ms A Priya",
+                        Flexible(
+                          child: Text(
+                            "${studentMap["addressed"]}",
+                          ),
                         ),
                       ],
                     ),
@@ -87,7 +106,7 @@ class CustomExpandableListTile extends StatelessWidget {
                         ),
                         Flexible(
                           child: Text(
-                            "I'm doing my project works for XYZ company, So please grant me on duty for 3 days.",
+                            "${studentMap["body"]}",
                           ),
                         ),
                       ],

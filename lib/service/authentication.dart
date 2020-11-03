@@ -44,7 +44,6 @@ class Authentication {
       print(e);
       return false;
     }
-    return false;
   }
 
   Future<bool> checkEmailVerified() async {

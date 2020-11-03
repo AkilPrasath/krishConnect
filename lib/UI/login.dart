@@ -1,7 +1,8 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:krish_connect/UI/dashboard.dart';
+
+import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/detailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/signup.dart';
@@ -9,12 +10,11 @@ import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
-import 'package:krish_connect/service/database.dart';
+
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
-import 'package:lottie/lottie.dart';
 
 class LoginScreen extends StatefulWidget {
   static final String id = "Login Screen";
@@ -120,11 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
           } else {
-            Navigator.push(
+            Navigator.pushNamed(
               context,
-              MaterialPageRoute(
-                builder: (context) => DashBoard(),
-              ),
+              DashboardScreen.id,
             );
           }
         } else {

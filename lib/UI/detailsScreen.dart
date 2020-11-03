@@ -1,10 +1,11 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:krish_connect/UI/dashboard.dart';
+
+import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
-import 'package:krish_connect/service/database.dart';
+
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
@@ -87,7 +88,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         actions: [
           FlatButton(
             onPressed: () {
-              Navigator.pushReplacementNamed(context, DashBoard.id);
+              Navigator.pushReplacementNamed(context, DashboardScreen.id);
             },
             child: Text("Go to Dashboard"),
           ),

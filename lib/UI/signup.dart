@@ -4,16 +4,15 @@ import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/data/enums.dart';
 import 'package:krish_connect/main.dart';
-import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/data/enums.dart';
+
 import 'package:krish_connect/service/authentication.dart';
-import 'package:krish_connect/service/database.dart';
+
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:lottie/lottie.dart';
+
 import 'emailVerify.dart';
 
 class SignupScreen extends StatefulWidget {
