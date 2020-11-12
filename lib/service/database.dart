@@ -7,6 +7,7 @@ import 'package:krish_connect/service/authentication.dart';
 
 class Database {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<Map<String, dynamic>> getStudent(String rollno) async {
     DocumentSnapshot studentDoc =
         await _firestore.collection("students").doc("$rollno").get();
@@ -66,21 +67,40 @@ class Database {
       }
     });
     controller1.stream.transform(classSectionFilter).pipe(controller2);
-    // controller2.stream.listen((result) {
-    // result.docChanges.forEach((res) {
-    //   if (res.type == DocumentChangeType.added) {
-    //     print("added");
-    //     print(res.doc.data());
-    //   } else if (res.type == DocumentChangeType.modified) {
-    //     print("modified");
-    //     print(res.doc.data());
-    //   } else if (res.type == DocumentChangeType.removed) {
-    //     print("removed");
-    //     print(res.doc.data());
-    //   }
-    // });
-    //   print(result);
-    // });
+    return controller2.stream;
+  }
+
+  Stream<dynamic> announcementsStream(Student student) {
+    String docName = student.semester.toString() +
+        student.department.toUpperCase() +
+        student.section.toUpperCase();
+    String rollno = student.rollno;
+    Stream<QuerySnapshot> mainStream =
+        _firestore.collection("announcements").snapshots();
+
+    StreamController controller2 = StreamController.broadcast();
+    // ignore: close_sinks
+    StreamController<QuerySnapshot> controller1 =
+        StreamController<QuerySnapshot>.broadcast();
+    controller1.addStream(mainStream);
+
+    var classSectionFilter = StreamTransformer.fromHandlers(
+        handleData: (QuerySnapshot querySnapshot, EventSink<dynamic> sink) {
+      List<Map<String, dynamic>> rollFilteredList = [];
+      for (DocumentChange documentChange in querySnapshot.docChanges) {
+        if (documentChange.doc.id == docName) {
+          for (Map<String, dynamic> map
+              in documentChange.doc.data()["announcements"]) {
+            if (map["response"]["$rollno"] == null) {
+              rollFilteredList.add(map);
+            }
+          }
+          sink.add(rollFilteredList);
+          break;
+        }
+      }
+    });
+    controller1.stream.transform(classSectionFilter).pipe(controller2);
 
     return controller2.stream;
   }
@@ -91,19 +111,27 @@ class Database {
         student.department.toUpperCase() +
         student.section.toUpperCase();
     String rollno = student.rollno;
-    DocumentSnapshot classDocument =
-        await _firestore.collection("requests").doc("$docName").get();
-    List<dynamic> oldRequestList = classDocument.data()["requests"];
+    //start transaction
+    _firestore.runTransaction((Transaction transaction) async {
+      DocumentReference doc = _firestore.collection("requests").doc("$docName");
+      return transaction
+          .get(doc)
+          .then((DocumentSnapshot documentSnapshot) async {
+        List<dynamic> oldRequestList = documentSnapshot.data()["requests"];
+        oldRequestList.removeWhere((element) {
+          if (element["rollno"] == rollno &&
+              element["timestamp"] == timestamp) {
+            return true;
+          }
+          return false;
+        });
+        await _firestore.collection("requests").doc("$docName").update({
+          "requests": oldRequestList,
+        });
+      });
+    });
 
-    oldRequestList.removeWhere((element) {
-      if (element["rollno"] == rollno && element["timestamp"] == timestamp) {
-        return true;
-      }
-      return false;
-    });
-    _firestore.collection("requests").doc("$docName").set({
-      "requests": oldRequestList,
-    });
+    //end transaction
   }
 
   Future<Map<String, dynamic>> getTutors() async {
@@ -121,6 +149,9 @@ class Database {
     String docName = student.semester.toString() +
         student.department.toUpperCase() +
         student.section.toUpperCase();
+    //  await _firestore.runTransaction((transaction) async{
+    //    return await transaction
+    //  });
     DocumentSnapshot classDocument =
         await _firestore.collection("requests").doc("$docName").get();
     if (classDocument.exists) {
@@ -137,5 +168,32 @@ class Database {
         "requests": [requestMap],
       });
     }
+  }
+
+  Future<void> setAnnouncementResponse(
+      dynamic timestamp, dynamic name, bool response) async {
+    Student student = await getIt.getAsync<Student>();
+    String docName = student.semester.toString() +
+        student.department.toUpperCase() +
+        student.section.toUpperCase();
+    String rollno = student.rollno;
+    await _firestore.runTransaction((transaction) async {
+      return await transaction
+          .get(_firestore.collection("announcements").doc("$docName"))
+          .then((DocumentSnapshot doc) async {
+        Map<String, dynamic> announce;
+        List<dynamic> announcementList = doc.data()["announcements"];
+        announcementList.forEach((element) {
+          if (element["timestamp"] == timestamp &&
+              element["name"].keys.toList()[0] == name) {
+            element["response"][student.rollno] = response;
+          }
+        });
+        await _firestore
+            .collection("announcements")
+            .doc("$docName")
+            .set({"announcements": announcementList});
+      });
+    });
   }
 }

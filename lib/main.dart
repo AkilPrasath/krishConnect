@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:background_fetch/background_fetch.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
 import 'package:get_it/get_it.dart';
 
 import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
@@ -13,9 +17,27 @@ import 'package:krish_connect/data/student.dart';
 
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const EVENTS_KEY = "fetch_events";
+void backgroundFetchHeadlessTask(String taskId) async {
+  print("[BackgroundFetch] Headless event received: $taskId");
+  BackgroundFetch.finish(taskId);
+
+  if (taskId == 'flutter_background_fetch') {
+    BackgroundFetch.scheduleTask(TaskConfig(
+        taskId: "com.transistorsoft.customtask",
+        delay: 5000,
+        periodic: false,
+        forceAlarmManager: true,
+        stopOnTerminate: false,
+        enableHeadless: true));
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
   setupLocator();
   runApp(MaterialApp(
@@ -31,6 +53,7 @@ void main() async {
       RequestStudent.id: (context) => RequestStudent(),
     },
   ));
+  BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
 }
 
 GetIt getIt = GetIt.instance;

@@ -12,6 +12,13 @@ class Authentication {
   Future<void> reloadUser() async {
     await _firebaseAuth.currentUser.reload();
     currentUser = _firebaseAuth.currentUser;
+    return Future.value(1);
+  }
+
+  Future<void> logoutUser() async {
+    await _firebaseAuth.signOut();
+    // await reloadUser();
+    return Future.value(1);
   }
 
   Future<SignupResult> signUp(String email, String password) async {

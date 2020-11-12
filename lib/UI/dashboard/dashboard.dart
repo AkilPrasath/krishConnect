@@ -1,7 +1,12 @@
+import 'dart:convert';
+
+import 'package:background_fetch/background_fetch.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/requestsStudent.dart';
 import 'package:krish_connect/data/student.dart';
@@ -10,12 +15,16 @@ import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/columnBuilder.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashBoard extends StatefulWidget {
   @override
   _DashBoardState createState() => _DashBoardState();
 }
+
+final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
 class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
   double screenWidth;
@@ -27,11 +36,76 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
   Animation<double> _scaleAnimation;
   List<Map<String, dynamic>> requestList = [];
   int i = 0;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     currentIndex = 0;
+    initPlatformState().then((value) {
+      BackgroundFetch.start();
+    });
+  }
+
+  Future<void> initPlatformState() async {
+    // Load persisted fetch events from SharedPreferences
+
+    // Configure BackgroundFetch.
+    BackgroundFetch.configure(
+            BackgroundFetchConfig(
+              minimumFetchInterval: 15,
+              forceAlarmManager: false,
+              stopOnTerminate: false,
+              startOnBoot: true,
+              enableHeadless: true,
+              requiresBatteryNotLow: false,
+              requiresCharging: false,
+              requiresStorageNotLow: false,
+              requiresDeviceIdle: false,
+              requiredNetworkType: NetworkType.NONE,
+            ),
+            _onBackgroundFetch)
+        .then((int status) {
+      print('[BackgroundFetch] configure success: $status');
+    }).catchError((e) {
+      print('[BackgroundFetch] configure ERROR: $e');
+    });
+
+    // Schedule a "one-shot" custom-task in 10000ms.
+    // These are fairly reliable on Android (particularly with forceAlarmManager) but not iOS,
+    // where device must be powered (and delay will be throttled by the OS).
+    BackgroundFetch.scheduleTask(TaskConfig(
+        taskId: "com.transistorsoft.customtask",
+        delay: 10000,
+        periodic: false,
+        forceAlarmManager: true,
+        stopOnTerminate: false,
+        enableHeadless: true));
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+  }
+
+  void _onBackgroundFetch(String taskId) async {
+    // This is the fetch-event callback.
+    print("[BackgroundFetch] Event received: $taskId");
+
+    if (taskId == "flutter_background_fetch") {
+      // Schedule a one-shot task when fetch event received (for testing).
+      BackgroundFetch.scheduleTask(TaskConfig(
+          taskId: "com.transistorsoft.customtask",
+          delay: 5000,
+          periodic: false,
+          forceAlarmManager: true,
+          stopOnTerminate: false,
+          enableHeadless: true));
+    }
+
+    // IMPORTANT:  You must signal completion of your fetch task or the OS can punish your app
+    // for taking too long in the background.
+    BackgroundFetch.finish(taskId);
   }
 
   @override
@@ -45,425 +119,362 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
         CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
-    return FadeTransition(
-      opacity: Tween<double>(begin: 1, end: 0.5).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.elasticOut)),
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              //on swiping left
-              if (details.delta.dx < -6) {
-                if (_controller.status == AnimationStatus.completed) {
-                  Provider.of<AnimationProvider>(context, listen: true)
-                      .toggle();
-                }
-              }
-            },
-            onTap: () {
+    return SlideTransition(
+      position: _slideAnimation,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: GestureDetector(
+          onPanUpdate: (details) {
+            //on swiping left
+            if (details.delta.dx < -6) {
               if (_controller.status == AnimationStatus.completed) {
-                _controller.reverse();
+                Provider.of<AnimationProvider>(context, listen: true).toggle();
               }
-            },
-            child: AppBackground(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              child: Scaffold(
-                appBar: AppBar(
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  leading: InkWell(
-                    borderRadius: BorderRadius.circular(30),
-                    onTap: () {
-                      Provider.of<AnimationProvider>(context, listen: true)
-                          .toggle();
-                    },
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.bars,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    "KRISH CONNECT",
-                    style: TextStyle(
+            }
+          },
+          onTap: () {
+            if (_controller.status == AnimationStatus.completed) {
+              _controller.reverse();
+            }
+          },
+          child: AppBackground(
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
+            child: Scaffold(
+              key: _scaffoldKey,
+              appBar: AppBar(
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                leading: InkWell(
+                  borderRadius: BorderRadius.circular(30),
+                  onTap: () {
+                    Provider.of<AnimationProvider>(context, listen: true)
+                        .toggle();
+                  },
+                  child: Center(
+                    child: FaIcon(
+                      FontAwesomeIcons.bars,
                       color: Colors.blue[700],
                     ),
                   ),
                 ),
-                backgroundColor: Colors.transparent,
-                body: Stack(
-                  children: [
-                    Container(
-                      child: SingleChildScrollView(
-                        physics: BouncingScrollPhysics(),
-                        child: Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: Text(
-                                  "Hi Akil,",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Suggested Connects ",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Icon(Icons.chevron_right),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
+                title: Text(
+                  "KRISH CONNECT",
+                  style: TextStyle(
+                    color: Colors.blue[700],
+                  ),
+                ),
+              ),
+              backgroundColor: Colors.transparent,
+              body: Stack(
+                children: [
+                  Container(
+                    child: SingleChildScrollView(
+                      physics: BouncingScrollPhysics(),
+                      child: Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Container(
-                                width: screenWidth,
-                                height: 0.13 * screenHeight,
-                                decoration: BoxDecoration(
-                                  color: Colors.white12,
-                                  border: Border.symmetric(
-                                    horizontal: BorderSide(
-                                      width: 0.25,
-                                      color: Colors.blue[700],
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Text(
+                                "Hi Akil,",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "Suggested Connects ",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: 5,
-                                  itemBuilder: (context, int index) {
-                                    var name = [
-                                      "Akil",
-                                      "Abishek",
-                                      "Akshaya",
-                                      "Mr Stark",
-                                      "Nisha"
-                                    ];
-                                    return StoryItem(
-                                        onTap: () {
-                                          bottomSheet(context);
-                                        },
-                                        screenWidth: screenWidth,
-                                        screenHeight: screenHeight,
-                                        name: name[index]);
-                                  },
-                                ),
+                                  Icon(Icons.chevron_right),
+                                ],
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "News for you",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Icon(Icons.chevron_right),
-                                  ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Container(
+                              width: screenWidth,
+                              height: 0.13 * screenHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.white12,
+                                border: Border.symmetric(
+                                  horizontal: BorderSide(
+                                    width: 0.25,
+                                    color: Colors.blue[700],
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              height: 0.24 * screenHeight,
-                              child: Swiper(
-                                onTap: (int index) {},
-                                onIndexChanged: (int index) {},
-                                layout: SwiperLayout.STACK,
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                physics: BouncingScrollPhysics(),
+                                scrollDirection: Axis.horizontal,
                                 itemCount: 5,
-                                itemWidth: 0.8 * screenWidth,
                                 itemBuilder: (context, int index) {
-                                  return Card(
-                                    elevation: 3,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                    child: Container(
-                                      width: 0.8 * screenWidth,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 12.0,
-                                                  top: 18,
-                                                ),
-                                                child: Text(
-                                                  "Ms Gwen Stacy",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 12.0,
-                                                ),
-                                                child: Text(
-                                                  "Oct 31 11:15 pm",
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 12.0),
-                                              child: Text(
-                                                "Dear Students, K12 Techno Services presents Hack-ED v1.0, inviting all developers and hackathon enthusiasts to come up with fantastic ideas to build products from scratch. Code your way from backend to frontend and design products that are unique, valuable, and user friendly!",
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 2,
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                Flexible(
-                                                  child: IconButton(
-                                                    tooltip:
-                                                        "Positive Response",
-                                                    icon: FaIcon(
-                                                      FontAwesomeIcons.check,
-                                                      color: Colors.green,
-                                                      size: 20,
-                                                    ),
-                                                    onPressed: () {},
-                                                  ),
-                                                ),
-                                                Flexible(
-                                                  child: IconButton(
-                                                    tooltip: "Noted",
-                                                    icon: FaIcon(
-                                                      FontAwesomeIcons.bookmark,
-                                                      color: Colors.yellow[900],
-                                                      size: 20,
-                                                    ),
-                                                    onPressed: () {},
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                                  var name = [
+                                    "Akil",
+                                    "Abishek",
+                                    "Akshaya",
+                                    "Mr Stark",
+                                    "Nisha"
+                                  ];
+                                  return StoryItem(
+                                      onTap: () {
+                                        bottomSheet(context);
+                                      },
+                                      screenWidth: screenWidth,
+                                      screenHeight: screenHeight,
+                                      name: name[index]);
                                 },
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Recent Requests",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "News for you",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    Icon(Icons.chevron_right),
-                                    Spacer(),
-                                    InkWell(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                            context, RequestStudent.id);
-                                      },
-                                      child: FaIcon(
-                                        FontAwesomeIcons.plusCircle,
-                                        color: Colors.blue,
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  Icon(Icons.chevron_right),
+                                ],
                               ),
                             ),
-                            FutureBuilder<Student>(
-                                future: getIt.getAsync<Student>(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    print("loading future");
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                  if (!snapshot.hasData) {
-                                    // print("no data");
-                                    return Center(
-                                      child: Text("no data in future"),
-                                    );
-                                  }
-                                  if (snapshot.hasData)
-                                    return StreamBuilder<dynamic>(
-                                        stream: getIt<Database>()
-                                            .requestsStream(snapshot.data),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return Center(
-                                              child:
-                                                  CircularProgressIndicator(),
+                          ),
+                          FutureBuilder<Student>(
+                            future: getIt.getAsync<Student>(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting)
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              if (snapshot.hasData)
+                                return StreamBuilder<dynamic>(
+                                  stream: getIt<Database>()
+                                      .announcementsStream(snapshot.data),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting)
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    if (!snapshot.hasData) {
+                                      return Center(
+                                        child: Text("No Announcements"),
+                                      );
+                                    }
+                                    if (snapshot.data.length == 0) {
+                                      return Container(
+                                        height: 0.2 * screenHeight,
+                                        child: Lottie.asset(false
+                                            ? "assets/lottie/announcement.json"
+                                            : "assets/lottie/33356-hacker.json"),
+                                      );
+                                    }
+                                    if (snapshot.hasData)
+                                      return Container(
+                                        height: 0.249 * screenHeight,
+                                        child: Swiper(
+                                          onTap: (int index) {},
+                                          onIndexChanged: (int index) {},
+                                          layout: SwiperLayout.STACK,
+                                          itemCount: snapshot.data.length,
+                                          itemWidth: 0.8 * screenWidth,
+                                          itemBuilder: (context, int index) {
+                                            return NewsCard(
+                                              screenWidth: screenWidth,
+                                              announcementMap:
+                                                  snapshot.data[index],
                                             );
-                                          }
+                                          },
+                                        ),
+                                      );
+                                  },
+                                );
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "Recent Requests",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right),
+                                  Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, RequestStudent.id);
+                                    },
+                                    child: FaIcon(
+                                      FontAwesomeIcons.plusCircle,
+                                      color: Colors.blue,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          FutureBuilder<Student>(
+                              future: getIt.getAsync<Student>(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  print("loading future");
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (!snapshot.hasData) {
+                                  // print("no data");
+                                  return Center(
+                                    child: Text("no data in future"),
+                                  );
+                                }
+                                if (snapshot.hasData)
+                                  return StreamBuilder<dynamic>(
+                                      stream: getIt<Database>()
+                                          .requestsStream(snapshot.data),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        }
 
-                                          if (!snapshot.hasData) {
-                                            return Center(
-                                              child: Text("no data"),
-                                            );
-                                          }
-                                          if (snapshot.data.length == 0) {
-                                            return Center(
-                                                child: Text(
-                                                    "No Requests made yet "));
-                                          }
-                                          if (snapshot.hasData) {
-                                            return ColumnBuilder(
-                                              itemCount: snapshot.data.length,
-                                              itemBuilder:
-                                                  (context, int index) {
-                                                return Padding(
-                                                  padding: const EdgeInsets
-                                                          .symmetric(
-                                                      horizontal: 8.0),
-                                                  child: Dismissible(
-                                                    confirmDismiss:
-                                                        (dismissDirection) async {
-                                                      if (snapshot.data[index]
-                                                              ["response"] ==
-                                                          0) {
-                                                        await getIt<Database>()
-                                                            .deleteRequest(
-                                                                snapshot.data[
-                                                                        index][
-                                                                    "timestamp"]);
-                                                        Scaffold.of(context)
-                                                            .showSnackBar(
-                                                                SnackBar(
-                                                          duration: Duration(
-                                                              seconds: 1),
-                                                          content: Text(
-                                                              "Request Deleted Successfully!"),
-                                                        ));
-                                                        return Future.value(
-                                                            true);
-                                                      } else {
-                                                        Scaffold.of(context)
-                                                            .showSnackBar(
-                                                                SnackBar(
-                                                          duration: Duration(
-                                                              seconds: 1),
-                                                          content: Text(
-                                                              "Only pending requests can be deleted"),
-                                                        ));
-                                                        print("false");
-                                                        return Future.value(
-                                                            false);
-                                                      }
-                                                    },
-                                                    direction: DismissDirection
-                                                        .startToEnd,
-                                                    background: Container(
-                                                      color: Colors.red,
-                                                      child: Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 50,
-                                                          ),
-                                                          FaIcon(
-                                                            FontAwesomeIcons
-                                                                .trash,
+                                        if (!snapshot.hasData) {
+                                          return Center(
+                                            child: Text("no data"),
+                                          );
+                                        }
+                                        if (snapshot.data.length == 0) {
+                                          return Center(
+                                              child: Text(
+                                                  "No Requests made yet "));
+                                        }
+                                        if (snapshot.hasData) {
+                                          return ColumnBuilder(
+                                            itemCount: snapshot.data.length,
+                                            itemBuilder: (context, int index) {
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8.0),
+                                                child: Dismissible(
+                                                  confirmDismiss:
+                                                      (dismissDirection) async {
+                                                    if (snapshot.data[index]
+                                                            ["response"] ==
+                                                        0) {
+                                                      await getIt<Database>()
+                                                          .deleteRequest(
+                                                              snapshot.data[
+                                                                      index][
+                                                                  "timestamp"]);
+                                                      Scaffold.of(context)
+                                                          .showSnackBar(
+                                                              SnackBar(
+                                                        duration: Duration(
+                                                            seconds: 1),
+                                                        content: Text(
+                                                            "Request Deleted Successfully!"),
+                                                      ));
+                                                      return Future.value(true);
+                                                    } else {
+                                                      Scaffold.of(context)
+                                                          .showSnackBar(
+                                                              SnackBar(
+                                                        duration: Duration(
+                                                            seconds: 1),
+                                                        content: Text(
+                                                            "Only pending requests can be deleted"),
+                                                      ));
+                                                      print("false");
+                                                      return Future.value(
+                                                          false);
+                                                    }
+                                                  },
+                                                  direction: DismissDirection
+                                                      .startToEnd,
+                                                  background: Container(
+                                                    color: Colors.red,
+                                                    child: Row(
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 50,
+                                                        ),
+                                                        FaIcon(
+                                                          FontAwesomeIcons
+                                                              .trash,
+                                                          color: Colors.white,
+                                                        ),
+                                                        SizedBox(
+                                                          width: 20,
+                                                        ),
+                                                        Text(
+                                                          "Release to Delete",
+                                                          style: TextStyle(
                                                             color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                           ),
-                                                          SizedBox(
-                                                            width: 20,
-                                                          ),
-                                                          Text(
-                                                            "Release to Delete",
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                          ),
-                                                          Spacer(
-                                                            flex: 2,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    key: UniqueKey(),
-                                                    child:
-                                                        CustomExpandableListTile(
-                                                      studentMap:
-                                                          snapshot.data[index],
+                                                        ),
+                                                        Spacer(
+                                                          flex: 2,
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                            );
-                                          }
-                                        });
-                                }),
-                          ],
-                        ),
+                                                  key: UniqueKey(),
+                                                  child:
+                                                      CustomExpandableListTile(
+                                                    studentMap:
+                                                        snapshot.data[index],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        }
+                                      });
+                              }),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -631,6 +642,192 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
             ),
           );
         });
+  }
+}
+
+class NewsCard extends StatelessWidget {
+  NewsCard({
+    Key key,
+    @required this.announcementMap,
+    @required this.screenWidth,
+  }) : super(key: key);
+
+  final double screenWidth;
+  final Map<String, dynamic> announcementMap;
+  String relativeTime;
+  @override
+  Widget build(BuildContext context) {
+    relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        width: 0.8 * screenWidth,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: "Announcement Priority",
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 12.0,
+                      top: 18,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          "${announcementMap["name"][announcementMap["name"].keys.toList()[0]]}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Spacer(),
+                        FaIcon(
+                          announcementMap["priority"] == 0
+                              ? FontAwesomeIcons.bell
+                              : FontAwesomeIcons.fire,
+                          color: announcementMap["priority"] == 0
+                              ? Colors.green
+                              : Colors.red,
+                          size: 18,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          announcementMap["priority"] == 0 ? "Neutral" : 'High',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: announcementMap["priority"] == 0
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    top: 4,
+                  ),
+                  child: Text(
+                    "$relativeTime",
+                    style: TextStyle(
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                child: Text(
+                  "${announcementMap["body"]}",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+              ),
+              // Spacer(),
+              announcementMap["type"] == "broadcast"
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            await sendResponse(
+                                context: context, response: true);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: FaIcon(
+                                    FontAwesomeIcons.check,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                ),
+                                Text(
+                                  "Mark as Read",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: FlatButton(
+                            child: FaIcon(
+                              FontAwesomeIcons.check,
+                              color: Colors.green,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              await sendResponse(
+                                  context: context, response: true);
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: FlatButton(
+                            child: FaIcon(
+                              FontAwesomeIcons.times,
+                              color: Colors.yellow[900],
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              await sendResponse(
+                                  context: context, response: false);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> sendResponse({BuildContext context, bool response}) async {
+    await getIt<Database>().setAnnouncementResponse(
+        announcementMap["timestamp"],
+        announcementMap["name"].keys.toList()[0],
+        response);
+
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 1),
+      content: Text("Responded successfully!"),
+    ));
   }
 }
 

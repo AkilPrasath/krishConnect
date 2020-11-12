@@ -107,6 +107,7 @@ class CustomExpandableListTile extends StatelessWidget {
                         Flexible(
                           child: Text(
                             "${studentMap["body"]}",
+                            textAlign: TextAlign.justify,
                           ),
                         ),
                       ],

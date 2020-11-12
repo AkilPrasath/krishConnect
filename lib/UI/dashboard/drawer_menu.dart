@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/requestsStudent.dart';
+import 'package:krish_connect/main.dart';
+import 'package:krish_connect/service/authentication.dart';
 
 import 'package:provider/provider.dart';
 
@@ -147,7 +150,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     Spacer(),
                     InkWell(
                       borderRadius: BorderRadius.circular(15),
-                      onTap: () {},
+                      onTap: () async {
+                        await getIt<Authentication>().logoutUser();
+                        Navigator.pushReplacementNamed(context, LoginScreen.id);
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8.0, vertical: 4),

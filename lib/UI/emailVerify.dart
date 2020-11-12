@@ -46,9 +46,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 onTap: () {
                   if (Navigator.canPop(context)) {
                     Navigator.pop(context);
-                  } else {
-                    print("I am unpoppable");
-                  }
+                  } else {}
                 },
                 child: Icon(
                   Icons.chevron_left,
@@ -65,126 +63,142 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
             ),
             backgroundColor: Colors.transparent,
-            body: Container(
-              width: screenWidth,
-              height: screenHeight,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  //mail loading json
-                  Container(
-                    height: screenHeight * 0.4,
-                    child: Lottie.asset(
-                      "assets/lottie/mailLoading.json",
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  SizedBox(height: 0.2 * screenWidth),
-                  Text(
-                    "Click the Button to recieve\n    E-mail Verification link",
-                    style: GoogleFonts.lato(
-                        fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.pushReplacementNamed(context, LoginScreen.id);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                      child: Text(
-                        "Not ${getIt<Authentication>().currentUser.email} ? Sign In with different account",
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 0.1 * screenWidth,
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-                      var connectivityResult =
-                          await (Connectivity().checkConnectivity());
-                      if (connectivityResult == ConnectivityResult.none) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Please Check your Internet Connection!"),
-                          duration: Duration(seconds: 2),
-                        ));
-                        return;
-                      }
-                      if (isButtonDisabled) if (await getIt<Authentication>()
-                          .sendVerification()) {
-                        setState(() {
-                          isButtonDisabled = false;
-                          validityText = "Link will become invalid in 1 minute";
-                          checkLinkSent = true;
-                        });
-                      } else {
-                        setState(() {
-                          errorText =
-                              "Some error occurred. Try after some time";
-                        });
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: Offset(0.0, 1.0), //(x,y)
-                            blurRadius: 6.0,
+            body: FutureBuilder(
+                future: getIt<Authentication>().reloadUser(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData)
+                    return Container(
+                      width: screenWidth,
+                      height: screenHeight,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          //mail loading json
+                          Container(
+                            height: screenHeight * 0.4,
+                            child: Lottie.asset(
+                              "assets/lottie/mailLoading.json",
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          SizedBox(height: 0.2 * screenWidth),
+                          Text(
+                            "Click the Button to recieve\n    E-mail Verification link",
+                            style: GoogleFonts.lato(
+                                fontSize: 20, fontWeight: FontWeight.w600),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.pushReplacementNamed(
+                                  context, LoginScreen.id);
+                            },
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32.0),
+                              child: Text(
+                                "Not ${getIt<Authentication>().currentUser.email} ? Sign In with different account",
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 0.1 * screenWidth,
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              var connectivityResult =
+                                  await (Connectivity().checkConnectivity());
+                              if (connectivityResult ==
+                                  ConnectivityResult.none) {
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      "Please Check your Internet Connection!"),
+                                  duration: Duration(seconds: 2),
+                                ));
+                                return;
+                              }
+                              if (isButtonDisabled) if (await getIt<
+                                      Authentication>()
+                                  .sendVerification()) {
+                                setState(() {
+                                  isButtonDisabled = false;
+                                  validityText =
+                                      "Link will become invalid in 1 minute";
+                                  checkLinkSent = true;
+                                });
+                              } else {
+                                setState(() {
+                                  errorText =
+                                      "Some error occurred. Try after some time";
+                                });
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8.0),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: Offset(0.0, 1.0), //(x,y)
+                                    blurRadius: 6.0,
+                                  ),
+                                ],
+                              ),
+                              height: 0.1 * screenWidth,
+                              width: 0.3 * screenWidth,
+                              child: Center(
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        "Send Link",
+                                        style: GoogleFonts.lato(
+                                            color: isButtonDisabled
+                                                ? Colors.green[400]
+                                                : Colors.grey),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        color: isButtonDisabled
+                                            ? Colors.green[400]
+                                            : Colors.grey,
+                                      )
+                                    ]),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            validityText,
+                            style: GoogleFonts.lato(
+                              fontSize: 15.0,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          Text(
+                            errorText,
+                            style: GoogleFonts.lato(
+                                color: Colors.red, fontSize: 15.0),
                           ),
                         ],
                       ),
-                      height: 0.1 * screenWidth,
-                      width: 0.3 * screenWidth,
-                      child: Center(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                "Send Link",
-                                style: GoogleFonts.lato(
-                                    color: isButtonDisabled
-                                        ? Colors.green[400]
-                                        : Colors.grey),
-                              ),
-                              Icon(
-                                Icons.arrow_forward,
-                                color: isButtonDisabled
-                                    ? Colors.green[400]
-                                    : Colors.grey,
-                              )
-                            ]),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    validityText,
-                    style: GoogleFonts.lato(
-                      fontSize: 15.0,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  Text(
-                    errorText,
-                    style: GoogleFonts.lato(color: Colors.red, fontSize: 15.0),
-                  ),
-                ],
-              ),
-            ),
+                    );
+                  else {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                }),
           ),
           screenWidth: screenWidth,
           screenHeight: screenHeight),

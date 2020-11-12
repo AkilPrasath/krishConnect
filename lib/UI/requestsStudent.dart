@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/service/database.dart';
@@ -47,6 +48,7 @@ class _RequestStudentState extends State<RequestStudent> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     dateRangeController = TextEditingController();
   }
 
@@ -275,8 +277,6 @@ class _RequestStudentState extends State<RequestStudent> {
                                   ),
                                   RocketButton(
                                     onTap: () async {
-                                      // getIt<Database>()
-                                      //     .addNewRequest({"aaa": true});
                                       if (_formKey.currentState.validate()) {
                                         _formKey.currentState.save();
                                         Student currentStudent =
