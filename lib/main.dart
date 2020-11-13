@@ -13,6 +13,7 @@ import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/requestsStudent.dart';
 import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/UI/splashScreen.dart';
+import 'package:krish_connect/UI/viewAllAnnouncements.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/service/Geofencing.dart';
 
@@ -55,6 +56,7 @@ void main() async {
       VerifyEmailScreen.id: (context) => VerifyEmailScreen(),
       DashboardScreen.id: (context) => DashboardScreen(),
       RequestStudent.id: (context) => RequestStudent(),
+      ViewAllAnnouncementPage.id: (context) => ViewAllAnnouncementPage(),
     },
   ));
   BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);

@@ -262,6 +262,39 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   Icon(Icons.chevron_right),
+                                  Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        ViewAllAnnouncementPage.id,
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8, right: 8, bottom: 8.0),
+                                      child: Row(
+                                        textBaseline: TextBaseline.alphabetic,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.baseline,
+                                        children: [
+                                          Text(
+                                            "View All",
+                                            style: TextStyle(
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              color: Colors.blue[800],
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          SizedBox(width: 5),
+                                          FaIcon(FontAwesomeIcons.bullhorn,
+                                              size: 15,
+                                              color: Colors.blueGrey[700]),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1090,12 +1123,9 @@ class ExpandedNewsCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: InkWell(
                   onTap: () {
-                    print(" pressesss");
-                    Navigator.push(
+                    Navigator.pushReplacementNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => ViewAllAnnouncementPage(),
-                      ),
+                      ViewAllAnnouncementPage.id,
                     );
                   },
                   child: Padding(

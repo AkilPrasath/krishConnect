@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
+import 'package:linkwell/linkwell.dart';
 import 'package:lottie/lottie.dart';
 
 class ViewAllAnnouncementPage extends StatefulWidget {
+  static final String id = "View all announcement page";
   @override
   _ViewAllAnnouncementPageState createState() =>
       _ViewAllAnnouncementPageState();
@@ -40,10 +43,11 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
                 return Center(
                   child: CircularProgressIndicator(),
                 );
-              if (snapshot.hasData){
-                student=snapshot.data;
+              if (snapshot.hasData) {
+                student = snapshot.data;
                 return StreamBuilder<dynamic>(
-                  stream: getIt<Database>().allAnnouncementsStream(snapshot.data),
+                  stream:
+                      getIt<Database>().allAnnouncementsStream(snapshot.data),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting)
                       return Center(
@@ -57,13 +61,10 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
                     if (snapshot.data.length == 0) {
                       return Container(
                         height: 0.2 * screenHeight,
-                        child: Lottie.asset(false
-                            ? "assets/lottie/announcement.json"
-                            : "assets/lottie/33356-hacker.json"),
+                        child: Lottie.asset("assets/lottie/33356-hacker.json"),
                       );
                     }
-                    if (snapshot.hasData){
-                      print(snapshot.data[0]);
+                    if (snapshot.hasData) {
                       return ListView.builder(
                           itemCount: snapshot.data.length,
                           shrinkWrap: true,
@@ -90,9 +91,10 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
                           // SizedBox(height: 30),
 
                           );
-                  }
+                    }
                   },
-                );}
+                );
+              }
             },
           ),
         ),
@@ -115,7 +117,7 @@ class AnimatedNewsCard extends StatelessWidget {
     @required this.announcementMap,
     @required this.student,
   }) {
-    relativeTime = "2 hours ago";
+    relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
   }
   @override
   Widget build(BuildContext context) {
@@ -155,20 +157,21 @@ class AnimatedNewsCard extends StatelessWidget {
                       Spacer(),
                       FaIcon(
                         announcementMap["priority"] == 0
-                         ? FontAwesomeIcons.bell : FontAwesomeIcons.fire,
+                            ? FontAwesomeIcons.bell
+                            : FontAwesomeIcons.fire,
                         color: announcementMap["priority"] == 0
-                        ? Colors.green : Colors.red,
+                            ? Colors.green
+                            : Colors.red,
                         size: 18,
                       ),
                       SizedBox(width: 6),
                       Text(
-                        announcementMap["priority"] == 0?
-                         "Neutral" : 'High',
+                        announcementMap["priority"] == 0 ? "Neutral" : 'High',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color:
-                              announcementMap["priority"] == 0
-                              ?Colors.green : Colors.red,
+                          color: announcementMap["priority"] == 0
+                              ? Colors.green
+                              : Colors.red,
                         ),
                       ),
                       SizedBox(width: 20),
@@ -185,8 +188,7 @@ class AnimatedNewsCard extends StatelessWidget {
                   top: 4,
                 ),
                 child: Text(
-                  // "$relativeTime"
-                  "2 hours ago",
+                  "$relativeTime",
                   style: TextStyle(
                     fontSize: 10,
                   ),
@@ -197,98 +199,131 @@ class AnimatedNewsCard extends StatelessWidget {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-                child: Text(
-                  "Students choose the elective. I have shared the google sheets link. https://docs.google.com/spreadsheets/d/1hmukk7OGCrALyfjcK_wdtRCo7Nm-2rVUOrirn-0PlN0/edit?usp=sharing",
-                  overflow: !resized ? TextOverflow.ellipsis : null,
+                child: LinkWell(
+                  "${announcementMap["body"]}",
+                  linkStyle: TextStyle(
+                    fontSize: 13,
+                    color: Colors.blue[700],
+                    decoration: TextDecoration.underline,
+                  ),
+                  style: TextStyle(color: Colors.grey[800]),
+                  overflow:
+                      !resized ? TextOverflow.ellipsis : TextOverflow.clip,
                   maxLines: !resized ? 2 : null,
                 ),
               ),
             ),
-            // Spacer(),
-
-            //
+            !resized
+                ? Center(
+                    child: FaIcon(
+                      FontAwesomeIcons.angleDown,
+                      color: Colors.blueAccent,
+                    ),
+                  )
+                : SizedBox(),
             resized
-                ?announcementMap["type"] == "broadcast"
+                ? announcementMap["type"] == "broadcast"
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           SizedBox(
                             width: 16,
                           ),
-                          InkWell(
-                            
-                            onTap: () async {
-                              await sendResponse(
-                                  context: context, response: true);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: announcementMap["reponse"][student.rollno]==null?Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: FaIcon(
-                                      FontAwesomeIcons.check,
-                                      color: Colors.green,
-                                      size: 20,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: announcementMap["response"]
+                                        [student.rollno] ==
+                                    null
+                                ? InkWell(
+                                    onTap: () async {
+                                      await sendResponse(
+                                          context: context, response: true);
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: FaIcon(
+                                            FontAwesomeIcons.check,
+                                            color: Colors.green,
+                                            size: 20,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Mark as Read",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.green[700],
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      FaIcon(
+                                        FontAwesomeIcons.checkDouble,
+                                        color: Colors.grey[500],
+                                        size: 12,
+                                      ),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Read",
+                                        style: TextStyle(
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    "Mark as Read",
+                          ),
+                        ],
+                      )
+                    : announcementMap["response"][student.rollno] == null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: FlatButton(
+                                  child: FaIcon(
+                                    FontAwesomeIcons.check,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    await sendResponse(
+                                        context: context, response: true);
+                                  },
+                                ),
+                              ),
+                              Flexible(
+                                child: FlatButton(
+                                  child: FaIcon(
+                                    FontAwesomeIcons.times,
+                                    color: Colors.yellow[900],
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    await sendResponse(
+                                        context: context, response: false);
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: announcementMap["response"][student.rollno]
+                                ? Text("Interested",
+                                    style: TextStyle(color: Colors.grey[500]))
+                                : Text("Not Interested",
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.green[700],
-                                    ),
-                                  ),
-                                ],
-                              ):
-                              Center(child: Text("Read",style:TextStyle(
-                                color:Colors.grey[500],
-                              ),),),
-                            ),
-                          ),
-                        ],
-                      )
-                    : announcementMap["response"][student.rollno]==null?Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: FlatButton(
-                              child: FaIcon(
-                                FontAwesomeIcons.check,
-                                color: Colors.green,
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                await sendResponse(
-                                    context: context, response: true);
-                              },
-                            ),
-                          ),
-                          Flexible(
-                            child: FlatButton(
-                              child: FaIcon(
-                                FontAwesomeIcons.times,
-                                color: Colors.yellow[900],
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                await sendResponse(
-                                    context: context, response: false);
-                              },
-                            ),
-                          ),
-                        ],
-                      ):Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(child: announcementMap["response"][student.rollno]?Text("Interested",style:TextStyle(color:Colors.grey[500])):Text("Not Interested",style:TextStyle(
-                          color:Colors.grey[500],
-                        )),),
-                      )
+                                      color: Colors.grey[500],
+                                    )),
+                          )
                 : Container(),
-                
           ],
         ),
       ),
@@ -296,14 +331,14 @@ class AnimatedNewsCard extends StatelessWidget {
   }
 
   Future<void> sendResponse({BuildContext context, bool response}) async {
-    // await getIt<Database>().setAnnouncementResponse(
-    //     widget.announcementMap["timestamp"],
-    //     widget.announcementMap["name"].keys.toList()[0],
-    //     response);
+    await getIt<Database>().setAnnouncementResponse(
+        announcementMap["timestamp"],
+        announcementMap["name"].keys.toList()[0],
+        response);
 
-    // _scaffoldKey.currentState.showSnackBar(SnackBar(
-    //   duration: Duration(seconds: 1),
-    //   content: Text("Responded successfully!"),
-    // ));
+    Scaffold.of(context).showSnackBar(SnackBar(
+      duration: Duration(seconds: 1),
+      content: Text("Responded successfully!"),
+    ));
   }
 }
