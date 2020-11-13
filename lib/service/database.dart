@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:geolocator/geolocator.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
@@ -194,6 +196,13 @@ class Database {
             .doc("$docName")
             .set({"announcements": announcementList});
       });
+    });
+  }
+
+  Future<void> updateLocation(String position) async {
+    await _firestore.collection("students").doc("18eucs008").update({
+      "location": position,
+      "time": DateTime.now(),
     });
   }
 }

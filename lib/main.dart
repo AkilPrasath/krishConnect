@@ -14,14 +14,18 @@ import 'package:krish_connect/UI/requestsStudent.dart';
 import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/UI/splashScreen.dart';
 import 'package:krish_connect/data/student.dart';
+import 'package:krish_connect/service/Geofencing.dart';
 
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/database.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 const EVENTS_KEY = "fetch_events";
 void backgroundFetchHeadlessTask(String taskId) async {
-  print("[BackgroundFetch] Headless event received: $taskId");
+  print("Akil Headless event received: $taskId");
+  Geofencing fence = Geofencing();
+
+  await Firebase.initializeApp();
+  await fence.updateLocationCallback();
   BackgroundFetch.finish(taskId);
 
   if (taskId == 'flutter_background_fetch') {

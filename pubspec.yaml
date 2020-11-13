@@ -39,6 +39,7 @@ dependencies:
   flutter_swiper: ^1.1.6
   lottie: ^0.6.0
   jiffy: ^3.0.1
+  linkwell: ^0.1.9
   flutter_phone_direct_caller: ^1.0.1
   provider: ^2.0.0
   background_fetch: ^0.6.0

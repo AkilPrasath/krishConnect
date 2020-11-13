@@ -6,18 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/requestsStudent.dart';
+import 'package:krish_connect/UI/viewAllAnnouncements.dart';
+import 'package:krish_connect/data/fenceData.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
+import 'package:krish_connect/service/Geofencing.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/columnBuilder.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
+import 'package:linkwell/linkwell.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DashBoard extends StatefulWidget {
   @override
@@ -39,17 +43,15 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentIndex = 0;
+    Geolocator.requestPermission();
     initPlatformState().then((value) {
       BackgroundFetch.start();
     });
   }
 
   Future<void> initPlatformState() async {
-    // Load persisted fetch events from SharedPreferences
-
     // Configure BackgroundFetch.
     BackgroundFetch.configure(
             BackgroundFetchConfig(
@@ -90,7 +92,9 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
 
   void _onBackgroundFetch(String taskId) async {
     // This is the fetch-event callback.
-    print("[BackgroundFetch] Event received: $taskId");
+    print("Akil Background event $taskId");
+    Geofencing fence = Geofencing();
+    await fence.updateLocationCallback();
 
     if (taskId == "flutter_background_fetch") {
       // Schedule a one-shot task when fetch event received (for testing).
@@ -303,10 +307,18 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                           itemCount: snapshot.data.length,
                                           itemWidth: 0.8 * screenWidth,
                                           itemBuilder: (context, int index) {
-                                            return NewsCard(
-                                              screenWidth: screenWidth,
-                                              announcementMap:
-                                                  snapshot.data[index],
+                                            return InkWell(
+                                              onTap: () async {
+                                                await showDetailedAnnouncement(
+                                                    context: context,
+                                                    announcementMap:
+                                                        snapshot.data[index]);
+                                              },
+                                              child: NewsCard(
+                                                screenWidth: screenWidth,
+                                                announcementMap:
+                                                    snapshot.data[index],
+                                              ),
                                             );
                                           },
                                         ),
@@ -480,6 +492,55 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+  }
+
+  showDetailedAnnouncement(
+      {BuildContext context, Map<String, dynamic> announcementMap}) {
+    showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (context) {
+        return true
+            ? Center(
+                child: ExpandedNewsCard(
+                  announcementMap: announcementMap,
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                ),
+              )
+            : Center(
+                child: Material(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
+                  color: Colors.transparent,
+                  child: Container(
+                    // color: Colors.white,
+                    width: 0.8 * screenWidth,
+                    height: 0.5 * screenHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [],
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          // Text("Announcements",style: ,),
+                          SizedBox(
+                            height: 40,
+                          ),
+                          Text(
+                              "Students please select your elective subjects. I have shared the google sheets link."),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+      },
     );
   }
 
@@ -675,23 +736,23 @@ class NewsCard extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: Tooltip(
-                  message: "Announcement Priority",
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12.0,
-                      top: 18,
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          "${announcementMap["name"][announcementMap["name"].keys.toList()[0]]}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    top: 18,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${announcementMap["name"][announcementMap["name"].keys.toList()[0]]}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
                         ),
-                        Spacer(),
-                        FaIcon(
+                      ),
+                      Spacer(),
+                      Tooltip(
+                        message: "Announcement Priority",
+                        child: FaIcon(
                           announcementMap["priority"] == 0
                               ? FontAwesomeIcons.bell
                               : FontAwesomeIcons.fire,
@@ -700,8 +761,11 @@ class NewsCard extends StatelessWidget {
                               : Colors.red,
                           size: 18,
                         ),
-                        SizedBox(width: 6),
-                        Text(
+                      ),
+                      SizedBox(width: 6),
+                      Tooltip(
+                        message: "Announcement Priority",
+                        child: Text(
                           announcementMap["priority"] == 0 ? "Neutral" : 'High',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
@@ -710,9 +774,9 @@ class NewsCard extends StatelessWidget {
                                 : Colors.red,
                           ),
                         ),
-                        SizedBox(width: 20),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 20),
+                    ],
                   ),
                 ),
               ),
@@ -734,8 +798,14 @@ class NewsCard extends StatelessWidget {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-                child: Text(
+                child: LinkWell(
                   "${announcementMap["body"]}",
+                  linkStyle: TextStyle(
+                    fontSize: 13,
+                    color: Colors.blue[700],
+                    decoration: TextDecoration.underline,
+                  ),
+                  style: TextStyle(color: Colors.grey[800]),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 2,
                 ),
@@ -824,6 +894,239 @@ class NewsCard extends StatelessWidget {
         announcementMap["name"].keys.toList()[0],
         response);
 
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 1),
+      content: Text("Responded successfully!"),
+    ));
+  }
+}
+
+class ExpandedNewsCard extends StatelessWidget {
+  ExpandedNewsCard({
+    Key key,
+    @required this.announcementMap,
+    @required this.screenWidth,
+    @required this.screenHeight,
+  }) : super(key: key);
+
+  final double screenWidth, screenHeight;
+  final Map<String, dynamic> announcementMap;
+  String relativeTime;
+  @override
+  Widget build(BuildContext context) {
+    relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        width: 0.8 * screenWidth,
+        // height: 0.4 * screenHeight,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    top: 18,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${announcementMap["name"][announcementMap["name"].keys.toList()[0]]}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Spacer(),
+                      Tooltip(
+                        message: "Announcement Priority",
+                        child: FaIcon(
+                          announcementMap["priority"] == 0
+                              ? FontAwesomeIcons.bell
+                              : FontAwesomeIcons.fire,
+                          color: announcementMap["priority"] == 0
+                              ? Colors.green
+                              : Colors.red,
+                          size: 18,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Tooltip(
+                        message: "Announcement Priority",
+                        child: Text(
+                          announcementMap["priority"] == 0 ? "Neutral" : 'High',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: announcementMap["priority"] == 0
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      // InkWell(
+                      //   onTap: () {},
+                      //   child: Text(
+                      //     "View All",
+                      //     style: TextStyle(
+                      //       fontStyle: FontStyle.italic,
+                      //       decoration: TextDecoration.underline,
+                      //       color: Colors.blue[800],
+                      //       fontWeight: FontWeight.w600,
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    top: 4,
+                  ),
+                  child: Text(
+                    "$relativeTime",
+                    style: TextStyle(
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                child: LinkWell(
+                  '''${announcementMap["body"]}''',
+                  linkStyle: TextStyle(
+                    color: Colors.blue[700],
+                    fontSize: 13.5,
+                    decoration: TextDecoration.underline,
+                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                ),
+              ),
+              // Spacer(),
+              announcementMap["type"] == "broadcast"
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            await sendResponse(
+                                context: context, response: true);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: FaIcon(
+                                    FontAwesomeIcons.check,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                ),
+                                Text(
+                                  "Mark as Read",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: FlatButton(
+                            child: FaIcon(
+                              FontAwesomeIcons.check,
+                              color: Colors.green,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              await sendResponse(
+                                  context: context, response: true);
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: FlatButton(
+                            child: FaIcon(
+                              FontAwesomeIcons.times,
+                              color: Colors.yellow[900],
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              await sendResponse(
+                                  context: context, response: false);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+              Align(
+                alignment: Alignment.center,
+                child: InkWell(
+                  onTap: () {
+                    print(" pressesss");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ViewAllAnnouncementPage(),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(left: 8, right: 8, bottom: 8.0),
+                    child: Text(
+                      "View All",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        decoration: TextDecoration.underline,
+                        color: Colors.blue[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> sendResponse({BuildContext context, bool response}) async {
+    await getIt<Database>().setAnnouncementResponse(
+        announcementMap["timestamp"],
+        announcementMap["name"].keys.toList()[0],
+        response);
+
+    Navigator.pop(context);
     _scaffoldKey.currentState.showSnackBar(SnackBar(
       duration: Duration(seconds: 1),
       content: Text("Responded successfully!"),
