@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/database.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
+import 'package:lottie/lottie.dart';
 
 class ViewAllAnnouncementPage extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
   bool resize = false;
   bool showButton = false;
   double screenWidth, screenHeight;
+  Student student;
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
@@ -30,31 +33,68 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
         body: Container(
           height: screenHeight,
           width: screenWidth,
-          child: ListView.builder(
-              itemCount: 1,
-              shrinkWrap: true,
-              itemBuilder: (context, int index) {
-                return InkWell(
-                  onTap: () {
-                    setState(() {
-                      resize = !resize;
-                    });
-                  },
-                  child: AnimatedNewsCard(
-                    vsync: this,
-                    announcementMap: {},
-                    resized: resize,
-                  ),
+          child: FutureBuilder<Student>(
+            future: getIt.getAsync<Student>(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting)
+                return Center(
+                  child: CircularProgressIndicator(),
                 );
-              }
-              // Text("AnnounceMents",
-              //     style: TextStyle(
-              //       fontSize: 20,
-              //       color: Colors.blue,
-              //     )),
-              // SizedBox(height: 30),
+              if (snapshot.hasData){
+                student=snapshot.data;
+                return StreamBuilder<dynamic>(
+                  stream: getIt<Database>().allAnnouncementsStream(snapshot.data),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: Text("No Announcements"),
+                      );
+                    }
+                    if (snapshot.data.length == 0) {
+                      return Container(
+                        height: 0.2 * screenHeight,
+                        child: Lottie.asset(false
+                            ? "assets/lottie/announcement.json"
+                            : "assets/lottie/33356-hacker.json"),
+                      );
+                    }
+                    if (snapshot.hasData){
+                      print(snapshot.data[0]);
+                      return ListView.builder(
+                          itemCount: snapshot.data.length,
+                          shrinkWrap: true,
+                          itemBuilder: (context, int index) {
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  resize = !resize;
+                                });
+                              },
+                              child: AnimatedNewsCard(
+                                student: student,
+                                vsync: this,
+                                announcementMap: snapshot.data[0],
+                                resized: resize,
+                              ),
+                            );
+                          }
+                          // Text("AnnounceMents",
+                          //     style: TextStyle(
+                          //       fontSize: 20,
+                          //       color: Colors.blue,
+                          //     )),
+                          // SizedBox(height: 30),
 
-              ),
+                          );
+                  }
+                  },
+                );}
+            },
+          ),
         ),
       ),
     ));
@@ -64,6 +104,7 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
 class AnimatedNewsCard extends StatelessWidget {
   double screenWidth, screenHeight;
   bool resized;
+  Student student;
   TickerProvider vsync;
   String relativeTime;
   Map<String, dynamic> announcementMap;
@@ -72,6 +113,7 @@ class AnimatedNewsCard extends StatelessWidget {
     @required this.resized,
     @required this.vsync,
     @required this.announcementMap,
+    @required this.student,
   }) {
     relativeTime = "2 hours ago";
   }
@@ -104,29 +146,29 @@ class AnimatedNewsCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        // "${widget.announcementMap["name"][widget.announcementMap["name"].keys.toList()[0]]}",
-                        "Priya A",
+                        "${announcementMap["name"][announcementMap["name"].keys.toList()[0]]}",
+                        // "Priya A",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Spacer(),
                       FaIcon(
-                        // widget.announcementMap["priority"] == 0
-                        true ? FontAwesomeIcons.bell : FontAwesomeIcons.fire,
-                        // color: widget.announcementMap["priority"] == 0
-                        color: true ? Colors.green : Colors.red,
+                        announcementMap["priority"] == 0
+                         ? FontAwesomeIcons.bell : FontAwesomeIcons.fire,
+                        color: announcementMap["priority"] == 0
+                        ? Colors.green : Colors.red,
                         size: 18,
                       ),
                       SizedBox(width: 6),
                       Text(
-                        // widget.announcementMap["priority"] == 0
-                        true ? "Neutral" : 'High',
+                        announcementMap["priority"] == 0?
+                         "Neutral" : 'High',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color:
-                              // widget.announcementMap["priority"] == 0
-                              true ? Colors.green : Colors.red,
+                              announcementMap["priority"] == 0
+                              ?Colors.green : Colors.red,
                         ),
                       ),
                       SizedBox(width: 20),
@@ -164,9 +206,9 @@ class AnimatedNewsCard extends StatelessWidget {
             ),
             // Spacer(),
 
-            // widget.announcementMap["type"] == "broadcast"
+            //
             resized
-                ? true
+                ?announcementMap["type"] == "broadcast"
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -174,13 +216,14 @@ class AnimatedNewsCard extends StatelessWidget {
                             width: 16,
                           ),
                           InkWell(
+                            
                             onTap: () async {
                               await sendResponse(
                                   context: context, response: true);
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Row(
+                              child: announcementMap["reponse"][student.rollno]==null?Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Padding(
@@ -200,12 +243,15 @@ class AnimatedNewsCard extends StatelessWidget {
                                     ),
                                   ),
                                 ],
-                              ),
+                              ):
+                              Center(child: Text("Read",style:TextStyle(
+                                color:Colors.grey[500],
+                              ),),),
                             ),
                           ),
                         ],
                       )
-                    : Row(
+                    : announcementMap["response"][student.rollno]==null?Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible(
@@ -235,8 +281,14 @@ class AnimatedNewsCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ):Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(child: announcementMap["response"][student.rollno]?Text("Interested",style:TextStyle(color:Colors.grey[500])):Text("Not Interested",style:TextStyle(
+                          color:Colors.grey[500],
+                        )),),
                       )
                 : Container(),
+                
           ],
         ),
       ),
