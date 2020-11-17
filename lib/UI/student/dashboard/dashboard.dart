@@ -8,14 +8,14 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jiffy/jiffy.dart';
-import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
-import 'package:krish_connect/UI/requestsStudent.dart';
-import 'package:krish_connect/UI/viewAllAnnouncements.dart';
+import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/requestsStudent.dart';
+import 'package:krish_connect/UI/student/viewAllAnnouncements.dart';
 import 'package:krish_connect/data/fenceData.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/Geofencing.dart';
-import 'package:krish_connect/service/database.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/columnBuilder.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
@@ -33,18 +33,15 @@ final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
   double screenWidth;
   double screenHeight;
-  int currentIndex;
+
   AnimationController _controller;
-  Stream requestStream;
   Animation<Offset> _slideAnimation;
   Animation<double> _scaleAnimation;
-  List<Map<String, dynamic>> requestList = [];
-  int i = 0;
 
   @override
   void initState() {
     super.initState();
-    currentIndex = 0;
+
     Geolocator.requestPermission();
     initPlatformState().then((value) {
       BackgroundFetch.start();
@@ -253,6 +250,8 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                               child: Row(
+                                // textBaseline: TextBaseline.alphabetic,
+                                // crossAxisAlignment: CrossAxisAlignment.baseline,
                                 children: [
                                   Text(
                                     "News for you",
@@ -309,7 +308,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                 );
                               if (snapshot.hasData)
                                 return StreamBuilder<dynamic>(
-                                  stream: getIt<Database>()
+                                  stream: getIt<StudentDatabase>()
                                       .announcementsStream(snapshot.data),
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
@@ -325,19 +324,25 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                     if (snapshot.data.length == 0) {
                                       return Container(
                                         height: 0.2 * screenHeight,
-                                        child: Lottie.asset(false
-                                            ? "assets/lottie/announcement.json"
-                                            : "assets/lottie/33356-hacker.json"),
+                                        child: Lottie.asset(
+                                            "assets/lottie/33356-hacker.json"),
                                       );
                                     }
-                                    if (snapshot.hasData)
+                                    if (snapshot.hasData) {
+                                      List announcementList = snapshot.data;
+                                      announcementList
+                                          .sort((dynamic b, dynamic a) {
+                                        int val = a["timestamp"]
+                                            .compareTo(b["timestamp"]);
+                                        return val;
+                                      });
                                       return Container(
                                         height: 0.249 * screenHeight,
                                         child: Swiper(
                                           onTap: (int index) {},
                                           onIndexChanged: (int index) {},
                                           layout: SwiperLayout.STACK,
-                                          itemCount: snapshot.data.length,
+                                          itemCount: announcementList.length,
                                           itemWidth: 0.8 * screenWidth,
                                           itemBuilder: (context, int index) {
                                             return InkWell(
@@ -345,7 +350,8 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                                 await showDetailedAnnouncement(
                                                     context: context,
                                                     announcementMap:
-                                                        snapshot.data[index]);
+                                                        announcementList[
+                                                            index]);
                                               },
                                               child: NewsCard(
                                                 screenWidth: screenWidth,
@@ -356,6 +362,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                           },
                                         ),
                                       );
+                                    }
                                   },
                                 );
                             },
@@ -409,7 +416,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                 }
                                 if (snapshot.hasData)
                                   return StreamBuilder<dynamic>(
-                                      stream: getIt<Database>()
+                                      stream: getIt<StudentDatabase>()
                                           .requestsStream(snapshot.data),
                                       builder: (context, snapshot) {
                                         if (snapshot.connectionState ==
@@ -443,7 +450,8 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                                     if (snapshot.data[index]
                                                             ["response"] ==
                                                         0) {
-                                                      await getIt<Database>()
+                                                      await getIt<
+                                                              StudentDatabase>()
                                                           .deleteRequest(
                                                               snapshot.data[
                                                                       index][
@@ -765,7 +773,7 @@ class NewsCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Align(
                 alignment: Alignment.centerLeft,
@@ -814,7 +822,7 @@ class NewsCard extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.topLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(
                     left: 12.0,
@@ -922,7 +930,7 @@ class NewsCard extends StatelessWidget {
   }
 
   Future<void> sendResponse({BuildContext context, bool response}) async {
-    await getIt<Database>().setAnnouncementResponse(
+    await getIt<StudentDatabase>().setAnnouncementResponse(
         announcementMap["timestamp"],
         announcementMap["name"].keys.toList()[0],
         response);
@@ -1151,7 +1159,7 @@ class ExpandedNewsCard extends StatelessWidget {
   }
 
   Future<void> sendResponse({BuildContext context, bool response}) async {
-    await getIt<Database>().setAnnouncementResponse(
+    await getIt<StudentDatabase>().setAnnouncementResponse(
         announcementMap["timestamp"],
         announcementMap["name"].keys.toList()[0],
         response);

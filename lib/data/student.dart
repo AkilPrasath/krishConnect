@@ -1,5 +1,5 @@
 import 'package:krish_connect/main.dart';
-import 'package:krish_connect/service/database.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 
 class Student {
   String name;
@@ -42,11 +42,38 @@ class Student {
     );
   }
   static Future<Student> create(String roll) async {
-    Map<String, dynamic> json = await getIt<Database>().getStudent(roll);
+    Map<String, dynamic> json = await getIt<StudentDatabase>().getStudent(roll);
     if (json == null) {
       return Student.empty();
     }
     return Student.fromJson(json);
+  }
+
+  Future<void> loadData(String rollno) async {
+    Map<String, dynamic> json =
+        await getIt<StudentDatabase>().getStudent(rollno);
+
+    isEmpty = false;
+    department = json["department"];
+    name = json["name"];
+    location = json["location"];
+    locationPrivacy = json["locationPrivacy"];
+    phoneNumber = json["phoneNumber"];
+    this.rollno = json["rollno"];
+    section = json["section"];
+    semester = json["semester"];
+  }
+
+  void clearData() {
+    isEmpty = true;
+    department = null;
+    name = null;
+    location = null;
+    locationPrivacy = null;
+    phoneNumber = null;
+    rollno = null;
+    section = null;
+    semester = null;
   }
 
   Future<void> updateDetails(Map json) async {
@@ -59,7 +86,7 @@ class Student {
     rollno = json["rollno"];
     section = json["section"];
     semester = json["semester"];
-    await getIt<Database>().updateInfo();
+    await getIt<StudentDatabase>().updateInfo();
     return;
   }
 

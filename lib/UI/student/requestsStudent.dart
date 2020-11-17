@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:krish_connect/data/student.dart';
-import 'package:krish_connect/service/database.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/columnBuilder.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 
-import '../main.dart';
+import '../../main.dart';
 
 class RequestStudent extends StatefulWidget {
   static final String id = "Request student";
@@ -135,7 +135,8 @@ class _RequestStudentState extends State<RequestStudent> {
                                     ],
                                   ),
                                   FutureBuilder<Map<String, dynamic>>(
-                                    future: getIt<Database>().getTutors(),
+                                    future:
+                                        getIt<StudentDatabase>().getTutors(),
                                     builder: (context, snapshot) {
                                       if (snapshot.connectionState ==
                                           ConnectionState.waiting) {
@@ -292,7 +293,7 @@ class _RequestStudentState extends State<RequestStudent> {
                                           "type": type,
                                           "proofURL": proofURL ?? "",
                                         };
-                                        await getIt<Database>()
+                                        await getIt<StudentDatabase>()
                                             .addNewRequest(requestMap);
                                         Scaffold.of(context)
                                             .showSnackBar(SnackBar(
@@ -364,7 +365,8 @@ class _RequestStudentState extends State<RequestStudent> {
                   }
                   if (snapshot.hasData)
                     return StreamBuilder<dynamic>(
-                        stream: getIt<Database>().requestsStream(snapshot.data),
+                        stream: getIt<StudentDatabase>()
+                            .requestsStream(snapshot.data),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -392,8 +394,9 @@ class _RequestStudentState extends State<RequestStudent> {
                                     confirmDismiss: (dismissDirection) async {
                                       if (snapshot.data[index]["response"] ==
                                           0) {
-                                        await getIt<Database>().deleteRequest(
-                                            snapshot.data[index]["timestamp"]);
+                                        await getIt<StudentDatabase>()
+                                            .deleteRequest(snapshot.data[index]
+                                                ["timestamp"]);
                                         Scaffold.of(context)
                                             .showSnackBar(SnackBar(
                                           duration: Duration(seconds: 1),

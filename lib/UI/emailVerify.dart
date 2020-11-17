@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:krish_connect/UI/detailsScreen.dart';
+import 'package:krish_connect/UI/student/studentDetailsScreen.dart';
 import 'package:krish_connect/UI/login.dart';
+import 'package:krish_connect/UI/staff/staffDetailsScreen.dart';
 
 import 'package:krish_connect/service/authentication.dart';
 
@@ -128,7 +129,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                                 setState(() {
                                   isButtonDisabled = false;
                                   validityText =
-                                      "Link will become invalid in 1 minute";
+                                      "Link will become invalid in 2 minutes";
                                   checkLinkSent = true;
                                 });
                               } else {
@@ -215,7 +216,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       }
     }
     if (flag == 1) {
-      Navigator.pushReplacementNamed(context, DetailsScreen.id);
+      String email = getIt<Authentication>().currentUser.email.split("@")[0];
+      RegExp studentRegex = RegExp(r"[0-9]{2}[a-zA-Z]{4}[0-9]{3}");
+      if (studentRegex.stringMatch(email) == null) {
+        Navigator.pushReplacementNamed(context, StaffDetailsScreen.id);
+      } else if (studentRegex.stringMatch(email).length == email.length) {
+        Navigator.pushReplacementNamed(context, StudentDetailsScreen.id);
+      }
     } else {
       setState(() {
         isButtonDisabled = true;

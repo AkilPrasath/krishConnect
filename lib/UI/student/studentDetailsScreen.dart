@@ -1,7 +1,7 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
@@ -12,13 +12,13 @@ import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:lottie/lottie.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-class DetailsScreen extends StatefulWidget {
+class StudentDetailsScreen extends StatefulWidget {
   static final String id = "Details Screen";
   @override
-  _DetailsScreenState createState() => _DetailsScreenState();
+  _StudentDetailsScreenState createState() => _StudentDetailsScreenState();
 }
 
-class _DetailsScreenState extends State<DetailsScreen> {
+class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
   double screenHeight;
   double screenWidth;
   String email;
@@ -110,7 +110,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
           appBar: AppBar(
             leading: InkWell(
               onTap: () {
-                Navigator.pop(context);
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
               },
               child: Icon(
                 Icons.chevron_left,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
 import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/UI/requestsStudent.dart';
+import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/requestsStudent.dart';
+import 'package:krish_connect/UI/student/viewAllAnnouncements.dart';
+import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
 
@@ -123,6 +125,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     DrawerItem(
                       iconData: FontAwesomeIcons.bullhorn,
                       text: "Announcements",
+                      onTap: () {
+                        Navigator.pushNamed(
+                            context, ViewAllAnnouncementPage.id);
+                      },
                     ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.fileImport,
@@ -151,7 +157,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     InkWell(
                       borderRadius: BorderRadius.circular(15),
                       onTap: () async {
+                        Student student = await getIt.getAsync<Student>();
+                        student.clearData();
                         await getIt<Authentication>().logoutUser();
+
                         Navigator.pushReplacementNamed(context, LoginScreen.id);
                       },
                       child: Padding(

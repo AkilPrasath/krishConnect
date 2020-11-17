@@ -25,3 +25,13 @@ enum UserMode {
   student,
   staff,
 }
+
+List<String> departmentsList = [
+  "CSE",
+  "MCT",
+  "ECE",
+  "EEE",
+  "MECH",
+  "IT",
+  "CIVIL"
+];

@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
-import 'package:krish_connect/service/database.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/customExpandableTile.dart';
 import 'package:linkwell/linkwell.dart';
@@ -18,10 +18,11 @@ class ViewAllAnnouncementPage extends StatefulWidget {
 
 class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
     with TickerProviderStateMixin {
-  bool resize = false;
+  int selectedCardIndex = -1;
   bool showButton = false;
   double screenWidth, screenHeight;
   Student student;
+
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
@@ -33,69 +34,96 @@ class _ViewAllAnnouncementPageState extends State<ViewAllAnnouncementPage>
       screenWidth: screenWidth,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Container(
-          height: screenHeight,
-          width: screenWidth,
-          child: FutureBuilder<Student>(
-            future: getIt.getAsync<Student>(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              if (snapshot.hasData) {
-                student = snapshot.data;
-                return StreamBuilder<dynamic>(
-                  stream:
-                      getIt<Database>().allAnnouncementsStream(snapshot.data),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting)
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    if (!snapshot.hasData) {
-                      return Center(
-                        child: Text("No Announcements"),
-                      );
-                    }
-                    if (snapshot.data.length == 0) {
-                      return Container(
-                        height: 0.2 * screenHeight,
-                        child: Lottie.asset("assets/lottie/33356-hacker.json"),
-                      );
-                    }
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                          itemCount: snapshot.data.length,
-                          shrinkWrap: true,
-                          itemBuilder: (context, int index) {
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  resize = !resize;
-                                });
-                              },
-                              child: AnimatedNewsCard(
-                                student: student,
-                                vsync: this,
-                                announcementMap: snapshot.data[0],
-                                resized: resize,
-                              ),
-                            );
-                          }
-                          // Text("AnnounceMents",
-                          //     style: TextStyle(
-                          //       fontSize: 20,
-                          //       color: Colors.blue,
-                          //     )),
-                          // SizedBox(height: 30),
-
-                          );
-                    }
-                  },
-                );
-              }
+        appBar: AppBar(
+          elevation: 0,
+          title: Text(
+            "Announcements",
+            style: TextStyle(
+              color: Colors.blue[700],
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          leading: InkWell(
+            onTap: () {
+              Navigator.pop(context);
             },
+            child: Center(
+                child: FaIcon(
+              FontAwesomeIcons.chevronLeft,
+              color: Colors.blue[700],
+            )),
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+          child: Container(
+            height: screenHeight,
+            width: screenWidth,
+            child: FutureBuilder<Student>(
+              future: getIt.getAsync<Student>(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting)
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                if (snapshot.hasData) {
+                  student = snapshot.data;
+                  return StreamBuilder<dynamic>(
+                    stream: getIt<StudentDatabase>()
+                        .allAnnouncementsStream(snapshot.data),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting)
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+
+                      if (snapshot.data.length == 0 || !snapshot.hasData) {
+                        return Container(
+                          height: 0.2 * screenHeight,
+                          child:
+                              Lottie.asset("assets/lottie/33356-hacker.json"),
+                        );
+                      }
+                      if (snapshot.hasData) {
+                        List announcementList = snapshot.data;
+                        announcementList.sort((dynamic b, dynamic a) {
+                          int val = a["timestamp"].compareTo(b["timestamp"]);
+                          return val;
+                        });
+
+                        return ListView.builder(
+                            physics: BouncingScrollPhysics(),
+                            itemCount: announcementList.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, int index) {
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    selectedCardIndex =
+                                        selectedCardIndex == index ? -1 : index;
+                                  });
+                                },
+                                child: AnimatedNewsCard(
+                                  student: student,
+                                  announcementMap: announcementList[index],
+                                  resized: index == selectedCardIndex,
+                                ),
+                              );
+                            }
+                            // Text("AnnounceMents",
+                            //     style: TextStyle(
+                            //       fontSize: 20,
+                            //       color: Colors.blue,
+                            //     )),
+                            // SizedBox(height: 30),
+
+                            );
+                      }
+                    },
+                  );
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -107,17 +135,17 @@ class AnimatedNewsCard extends StatelessWidget {
   double screenWidth, screenHeight;
   bool resized;
   Student student;
-  TickerProvider vsync;
+  bool responded;
   String relativeTime;
   Map<String, dynamic> announcementMap;
 
   AnimatedNewsCard({
     @required this.resized,
-    @required this.vsync,
     @required this.announcementMap,
     @required this.student,
   }) {
     relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
+    responded = (announcementMap["response"][student.rollno] != null);
   }
   @override
   Widget build(BuildContext context) {
@@ -331,7 +359,7 @@ class AnimatedNewsCard extends StatelessWidget {
   }
 
   Future<void> sendResponse({BuildContext context, bool response}) async {
-    await getIt<Database>().setAnnouncementResponse(
+    await getIt<StudentDatabase>().setAnnouncementResponse(
         announcementMap["timestamp"],
         announcementMap["name"].keys.toList()[0],
         response);

@@ -7,7 +7,7 @@ import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
 
-class Database {
+class StudentDatabase {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<Map<String, dynamic>> getStudent(String rollno) async {
@@ -20,6 +20,15 @@ class Database {
     } else {
       return null;
     }
+  }
+
+  Future isStudentExist(String rollno) async {
+    DocumentSnapshot studentDoc =
+        await _firestore.collection("students").doc("$rollno").get();
+    if (studentDoc.exists) {
+      return true;
+    }
+    return false;
   }
 
   Future<void> updateInfo() async {
@@ -72,7 +81,7 @@ class Database {
     return controller2.stream;
   }
 
-  Stream<dynamic> allAnnouncementsStream(Student student){
+  Stream<dynamic> allAnnouncementsStream(Student student) {
     String docName = student.semester.toString() +
         student.department.toUpperCase() +
         student.section.toUpperCase();
@@ -93,8 +102,7 @@ class Database {
         if (documentChange.doc.id == docName) {
           for (Map<String, dynamic> map
               in documentChange.doc.data()["announcements"]) {
-              rollFilteredList.add(map);
-            
+            rollFilteredList.add(map);
           }
           sink.add(rollFilteredList);
           break;
@@ -104,7 +112,6 @@ class Database {
     controller1.stream.transform(classSectionFilter).pipe(controller2);
 
     return controller2.stream;
-
   }
 
   Stream<dynamic> announcementsStream(Student student) {

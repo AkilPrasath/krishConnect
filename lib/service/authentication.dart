@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:krish_connect/data/enums.dart';
+import 'package:krish_connect/data/constants.dart';
 
 class Authentication {
   // UserCredential userCred;

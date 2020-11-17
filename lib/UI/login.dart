@@ -2,14 +2,18 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:krish_connect/UI/dashboard/dashboardScreen.dart';
-import 'package:krish_connect/UI/detailsScreen.dart';
+import 'package:krish_connect/UI/staff/staffDetailsScreen.dart';
+import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/studentDetailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/signup.dart';
-import 'package:krish_connect/data/enums.dart';
+import 'package:krish_connect/data/constants.dart';
+import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
+import 'package:krish_connect/service/staffDatabase.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
@@ -110,17 +114,25 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         if (userMode == UserMode.student) {
           Student student = await getIt.getAsync<Student>();
-          // Student.create(_email.substring(0, 9));
+
           print(student);
           if (student.isEmpty) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DetailsScreen(),
-              ),
-            );
+            if (await getIt<StudentDatabase>()
+                .isStudentExist(_email.substring(0, 9))) {
+              await student.loadData(_email.substring(0, 9));
+              print(student);
+              Navigator.pushReplacementNamed(
+                context,
+                DashboardScreen.id,
+              );
+            } else {
+              Navigator.pushNamed(
+                context,
+                StudentDetailsScreen.id,
+              );
+            }
           } else {
-            Navigator.pushNamed(
+            Navigator.pushReplacementNamed(
               context,
               DashboardScreen.id,
             );
@@ -128,6 +140,18 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           // go to staff
           print("stafffffff");
+          Staff staff = await getIt.getAsync<Staff>();
+          if (staff.isEmpty) {
+            if (await getIt<StaffDatabase>()
+                .isStaffExist(_email.split("@")[0])) {
+              //load data function
+              //push to dashboard
+            } else {
+              Navigator.pushReplacementNamed(context, StaffDetailsScreen.id);
+            }
+          } else {
+            //push to staff dashboard
+          }
         }
       }
     }
@@ -183,8 +207,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isPassword: false,
                                 labelText: "Email",
                                 onSaved: (value) {
-                                  _email = value + "@skcet.ac.in";
-
+                                  // TODO: dummy
+                                  // _email = value + "@skcet.ac.in";
+                                  _email = value + "@gmail.com";
                                   RegExp studentRegex =
                                       RegExp(r"[0-9]{2}[a-zA-Z]{4}[0-9]{3}");
                                   if (studentRegex.stringMatch(value) == null) {

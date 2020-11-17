@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:krish_connect/data/fenceData.dart';
 import 'package:krish_connect/main.dart';
-import 'package:krish_connect/service/database.dart';
+import 'package:krish_connect/service/studentDatabase.dart';
 
 class Geofencing {
   String getBlockLocation(Position currentPosition) {
@@ -19,7 +19,7 @@ class Geofencing {
     Position currentPosition = await Geolocator.getCurrentPosition();
     Geofencing fence = Geofencing();
     String location = fence.getBlockLocation(currentPosition);
-    await Database().updateLocation(location);
+    await StudentDatabase().updateLocation(location);
   }
 
   bool _isInsidePolygon({Position currentPosition, List polygon}) {

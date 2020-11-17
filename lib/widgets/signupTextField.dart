@@ -1,36 +1,43 @@
 import 'package:flutter/material.dart';
 
 class SignupTextField extends StatelessWidget {
-  const SignupTextField({
+  SignupTextField({
     Key key,
     @required this.isPassword,
     @required this.labelText,
     @required this.isEmail,
     @required this.onSaved,
     this.validator,
-    TextEditingController textEditingController,
-  })  : _textEditingController = textEditingController,
-        super(key: key);
+    this.enabled,
+    this.controller,
+    this.onChanged,
+    this.isNumber,
+  }) : super(key: key);
 
-  final TextEditingController _textEditingController;
+  final TextEditingController controller;
   final String labelText;
   final bool isEmail;
+  final bool isNumber;
   final bool isPassword;
+  bool enabled = false;
   final Function onSaved;
   final String Function(String) validator;
-
+  final Function onChanged;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       onSaved: onSaved,
+      onChanged: onChanged,
       validator: validator,
-      controller: _textEditingController,
+      controller: controller,
       style: TextStyle(
         fontSize: 20,
         color: Colors.blueGrey[900],
       ),
       obscureText: isPassword,
+      keyboardType: (isNumber ?? false) ? TextInputType.phone : null,
       decoration: InputDecoration(
+        enabled: enabled ?? true,
         labelText: "$labelText",
         labelStyle: TextStyle(
           fontSize: 15,
