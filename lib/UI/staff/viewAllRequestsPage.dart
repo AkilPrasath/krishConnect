@@ -270,7 +270,7 @@ class AnimatedNewsCard extends StatelessWidget {
                   //         ],
                   //       )
                   // :
-                  resized?Row(
+                  resized?announcementMap["response"]==0?Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Flexible(
@@ -298,6 +298,20 @@ class AnimatedNewsCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ):Padding(
+                    padding: const EdgeInsets.symmetric(vertical:12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:<Widget> [
+                      announcementMap["response"]==1?Text("Accepted",style:TextStyle(
+                        color:Colors.green,
+                        fontWeight: FontWeight.w600,
+                      )):Text("Rejected",
+                      style:TextStyle(
+                        color:Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ))
+                    ],),
                   ):Container(),
                 ],
               ),
