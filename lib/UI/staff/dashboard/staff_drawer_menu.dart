@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
-import 'package:krish_connect/UI/student/requestsStudent.dart';
-import 'package:krish_connect/UI/student/viewAllAnnouncements.dart';
-import 'package:krish_connect/data/student.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
+
+import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
 
 import 'package:provider/provider.dart';
 
-class DrawerMenu extends StatefulWidget {
+class StaffDrawerMenu extends StatefulWidget {
   static final String id = "Drawer menu";
   @override
-  _DrawerMenuState createState() => _DrawerMenuState();
+  _StaffDrawerMenuState createState() => _StaffDrawerMenuState();
 }
 
-class _DrawerMenuState extends State<DrawerMenu> {
+class _StaffDrawerMenuState extends State<StaffDrawerMenu> {
   double width;
   double height;
   double imageWidth;
@@ -29,7 +28,8 @@ class _DrawerMenuState extends State<DrawerMenu> {
       onPanUpdate: (details) {
         //on swiping left
         AnimationController _controller =
-            Provider.of<AnimationProvider>(context, listen: true).controller;
+            Provider.of<StaffDrawerAnimationProvider>(context, listen: true)
+                .controller;
         if (details.delta.dx < -6) {
           if (_controller.status == AnimationStatus.completed) {
             _controller.reverse();
@@ -125,17 +125,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     DrawerItem(
                       iconData: FontAwesomeIcons.bullhorn,
                       text: "Announcements",
-                      onTap: () {
-                        Navigator.pushNamed(
-                            context, ViewAllAnnouncementPage.id);
-                      },
                     ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.fileImport,
                       text: "My Requests",
-                      onTap: () {
-                        Navigator.pushNamed(context, RequestStudent.id);
-                      },
                     ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.cog,
@@ -157,8 +150,8 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     InkWell(
                       borderRadius: BorderRadius.circular(15),
                       onTap: () async {
-                        Student student = await getIt.getAsync<Student>();
-                        student.clearData();
+                        Staff staff = await getIt.getAsync<Staff>();
+                        staff.clearData();
                         await getIt<Authentication>().logoutUser();
 
                         Navigator.pushReplacementNamed(context, LoginScreen.id);

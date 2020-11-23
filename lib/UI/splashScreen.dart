@@ -2,9 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
 
 import 'package:krish_connect/UI/staff/staffDetailsScreen.dart';
-import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 import 'package:krish_connect/UI/student/studentDetailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
@@ -40,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
             //staff
             Staff staff = await getIt.getAsync<Staff>();
             if (!staff.isEmpty) {
-              Navigator.pushReplacementNamed(context, StaffDashboard.id);
+              Navigator.pushReplacementNamed(context, StaffDashboardScreen.id);
             } else {
               Navigator.pushReplacementNamed(context, StaffDetailsScreen.id);
             }

@@ -1,7 +1,9 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
 import 'package:krish_connect/data/constants.dart';
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
@@ -56,6 +58,12 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
   }
 
   @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
@@ -90,32 +98,39 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
             actions: [
               Center(
                 child: InkWell(
-                  onTap: () async {
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
-                      var connectivityResult =
-                          await (Connectivity().checkConnectivity());
-                      if (connectivityResult == ConnectivityResult.none) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Please Check your Internet Connection!"),
-                          duration: Duration(seconds: 2),
-                        ));
-                        return;
-                      }
-                      Staff staff = await getIt.getAsync<Staff>();
-                      await staff.updateDetails(
-                        name: name,
-                        locationPrivacy: locationPrivacy,
-                        phoneNumber: phoneNumber,
-                        subjectMapList: subjectMapList,
-                        tutorMap: tutorDetails,
-                        email: email,
-                      );
-                      Navigator.pushReplacementNamed(
-                          context, StaffDashboard.id);
-                    }
-                  },
+                  onTap: false
+                      ? () async {
+                          (await getIt.getAsync<Staff>()).clearData();
+                          getIt<Authentication>().logoutUser();
+                          Navigator.pushReplacementNamed(
+                              context, LoginScreen.id);
+                        }
+                      : () async {
+                          if (_formKey.currentState.validate()) {
+                            _formKey.currentState.save();
+                            var connectivityResult =
+                                await (Connectivity().checkConnectivity());
+                            if (connectivityResult == ConnectivityResult.none) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                content: Text(
+                                    "Please Check your Internet Connection!"),
+                                duration: Duration(seconds: 2),
+                              ));
+                              return;
+                            }
+                            Staff staff = await getIt.getAsync<Staff>();
+                            await staff.updateDetails(
+                              name: name,
+                              locationPrivacy: locationPrivacy,
+                              phoneNumber: phoneNumber,
+                              subjectMapList: subjectMapList,
+                              tutorMap: tutorDetails,
+                              email: email,
+                            );
+                            Navigator.pushReplacementNamed(
+                                context, StaffDashboardScreen.id);
+                          }
+                        },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
@@ -137,6 +152,7 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
             child: Form(
               key: _formKey,
               child: Column(
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -291,6 +307,15 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
                                         duration: Duration(milliseconds: 100),
                                         curve: Curves.bounceIn);
                                   });
+                                }
+                                if (switchValue) {
+                                  tutorDetails = {
+                                    "semester": 1,
+                                    "section": "B",
+                                    "department": "CSE"
+                                  };
+                                } else {
+                                  tutorDetails = {};
                                 }
                               }),
                         ],
@@ -512,6 +537,12 @@ class _SubjectInputItemState extends State<SubjectInputItem> {
       subjectCodeController.text =
           _StaffDetailsScreenState.subjectMapList[widget.index]["code"];
     });
+  }
+
+  @override
+  void dispose() {
+    subjectCodeController.dispose();
+    super.dispose();
   }
 
   @override

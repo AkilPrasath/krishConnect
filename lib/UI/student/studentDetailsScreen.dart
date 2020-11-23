@@ -1,7 +1,7 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';

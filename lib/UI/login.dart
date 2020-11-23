@@ -1,9 +1,11 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
 
 import 'package:krish_connect/UI/staff/staffDetailsScreen.dart';
-import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 import 'package:krish_connect/UI/student/studentDetailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/signup.dart';
@@ -19,6 +21,7 @@ import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:krish_connect/widgets/mailLoading.dart';
 import 'package:krish_connect/widgets/rocketButton.dart';
 import 'package:krish_connect/widgets/signupTextField.dart';
+import 'package:logger/logger.dart';
 
 class LoginScreen extends StatefulWidget {
   static final String id = "Login Screen";
@@ -144,13 +147,18 @@ class _LoginScreenState extends State<LoginScreen> {
           if (staff.isEmpty) {
             if (await getIt<StaffDatabase>()
                 .isStaffExist(_email.split("@")[0])) {
+              await staff.loadData(_email.split("@")[0]);
+
               //load data function
               //push to dashboard
+              Navigator.pushReplacementNamed(context, StaffDashboardScreen.id);
             } else {
               Navigator.pushReplacementNamed(context, StaffDetailsScreen.id);
             }
           } else {
             //push to staff dashboard
+
+            Navigator.pushReplacementNamed(context, StaffDashboardScreen.id);
           }
         }
       }

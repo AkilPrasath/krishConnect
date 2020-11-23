@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:krish_connect/UI/student/dashboard/dashboard.dart';
-import 'package:krish_connect/UI/student/dashboard/drawer_menu.dart';
+import 'package:krish_connect/UI/student/dashboard/student_dashboard.dart';
+import 'package:krish_connect/UI/student/dashboard/student_drawer_menu.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:provider/provider.dart';
 

@@ -6,12 +6,13 @@ import 'package:flutter/material.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard.dart';
-import 'package:krish_connect/UI/student/dashboard/dashboardScreen.dart';
+import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
+import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 
 import 'package:krish_connect/UI/student/studentDetailsScreen.dart';
 import 'package:krish_connect/UI/emailVerify.dart';
 import 'package:krish_connect/UI/login.dart';
-import 'package:krish_connect/UI/student/requestsStudent.dart';
+import 'package:krish_connect/UI/student/student_requests.dart';
 import 'package:krish_connect/UI/signup.dart';
 import 'package:krish_connect/UI/splashScreen.dart';
 import 'package:krish_connect/UI/staff/staffDetailsScreen.dart';
@@ -65,7 +66,7 @@ void main() async {
       RequestStudent.id: (context) => RequestStudent(),
       ViewAllAnnouncementPage.id: (context) => ViewAllAnnouncementPage(),
       StaffDetailsScreen.id: (context) => StaffDetailsScreen(),
-      StaffDashboard.id: (context) => StaffDashboard(),
+      StaffDashboardScreen.id: (context) => StaffDashboardScreen(),
     },
   ));
   BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
