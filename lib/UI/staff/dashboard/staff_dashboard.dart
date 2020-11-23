@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
+import 'package:krish_connect/UI/staff/viewAllRequestsPage.dart';
 import 'package:krish_connect/UI/student/dashboard/student_dashboard.dart';
 
 import 'package:krish_connect/data/staff.dart';
@@ -197,7 +198,14 @@ class StudentPermissionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: () {},
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context){
+              return Center(child: ExpandedStudentPermissionCard(announcementMap: announcementMap, screenWidth:screenWidth));
+            }
+          );
+        },
         child: Container(
           width: 0.8 * screenWidth,
           decoration: BoxDecoration(
@@ -263,7 +271,8 @@ class StudentPermissionCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                   child: LinkWell(
-                    "${announcementMap["body"]}",
+                    // "${announcementMap["body"]}",
+                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                     linkStyle: TextStyle(
                       fontSize: 13,
                       color: Colors.blue[700],
@@ -352,6 +361,223 @@ class StudentPermissionCard extends StatelessWidget {
     );
   }
 
+
+  Future<void> sendResponse({BuildContext context, bool response}) async {
+    await getIt<StaffDatabase>().setRequestResponse(
+        response, announcementMap["timestamp"], announcementMap["rollno"]);
+
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 1),
+      content: Text("Responded successfully!"),
+    ));
+  }
+  
+
+}
+
+class ExpandedStudentPermissionCard extends StatelessWidget {
+  ExpandedStudentPermissionCard({
+    Key key,
+    @required this.announcementMap,
+    @required this.screenWidth,
+  }) : super(key: key);
+
+  final double screenWidth;
+  final Map<String, dynamic> announcementMap;
+  String relativeTime;
+  @override
+  Widget build(BuildContext context) {
+    relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(15),
+        onTap: () {
+         
+        },
+        child: Container(
+          width: 0.8 * screenWidth,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: SingleChildScrollView(
+                          child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12.0,
+                        top: 18,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            announcementMap["name"],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            announcementMap["rollno"],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Spacer(),
+                          Text(
+                            announcementMap["type"],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12.0,
+                        top: 4,
+                      ),
+                      child: Text(
+                        "$relativeTime",
+                        style: TextStyle(
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    child: LinkWell(
+                      // "${announcementMap["body"]}",
+                      '''aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa''',
+                      linkStyle: TextStyle(
+                        fontSize: 13,
+                        color: Colors.blue[700],
+                        decoration: TextDecoration.underline,
+                      ),
+                      style: TextStyle(color: Colors.grey[800]),
+                    ),
+                  ),
+                  // Spacer(),
+                  // announcementMap["type"] == "broadcast"
+                  //     ? Row(
+                  //         mainAxisAlignment: MainAxisAlignment.start,
+                  //         children: [
+                  //           SizedBox(
+                  //             width: 16,
+                  //           ),
+                  //           InkWell(
+                  //             onTap: () async {
+                  //               // await sendResponse(
+                  //               //     context: context, response: true);
+                  //             },
+                  //             child: Padding(
+                  //               padding: const EdgeInsets.all(8.0),
+                  //               child: Row(
+                  //                 mainAxisSize: MainAxisSize.min,
+                  //                 children: [
+                  //                   Padding(
+                  //                     padding: const EdgeInsets.symmetric(
+                  //                         horizontal: 8.0),
+                  //                     child: FaIcon(
+                  //                       FontAwesomeIcons.check,
+                  //                       color: Colors.green,
+                  //                       size: 20,
+                  //                     ),
+                  //                   ),
+                  //                   Text(
+                  //                     "Mark as Read",
+                  //                     style: TextStyle(
+                  //                       fontWeight: FontWeight.w600,
+                  //                       color: Colors.green[700],
+                  //                     ),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       )
+                  // :
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: FlatButton(
+                          child: FaIcon(
+                            FontAwesomeIcons.check,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            await sendResponse(context: context, response: true);
+                          },
+                        ),
+                      ),
+                      Flexible(
+                        child: FlatButton(
+                          child: FaIcon(
+                            FontAwesomeIcons.times,
+                            color: Colors.yellow[900],
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            await sendResponse(context: context, response: false);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  Align(
+                alignment: Alignment.center,
+                child: InkWell(
+                  onTap: () {
+                    // Navigator.pushReplacementNamed(
+                    //   context,
+                    //   ViewAllAnnouncementPage.id,
+                    // );
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder:(context)=>ViewAllRequestsPage() ));
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(left: 8, right: 8, bottom: 8.0),
+                    child: Text(
+                      "View All",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        decoration: TextDecoration.underline,
+                        color: Colors.blue[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+    
   Future<void> sendResponse({BuildContext context, bool response}) async {
     await getIt<StaffDatabase>().setRequestResponse(
         response, announcementMap["timestamp"], announcementMap["rollno"]);
@@ -362,3 +588,4 @@ class StudentPermissionCard extends StatelessWidget {
     ));
   }
 }
+  

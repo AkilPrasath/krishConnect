@@ -101,6 +101,37 @@ class StaffDatabase {
     return controller2.stream;
   }
 
+
+  Stream<dynamic> allRequestStream(Staff staff) {
+    String docName=staff.tutor["semester"].toString()+staff.tutor["department"]+staff.tutor["section"];
+    Stream<QuerySnapshot> mainStream =
+        _firestore.collection("requests").snapshots();
+
+    StreamController controller2 = StreamController.broadcast();
+    // ignore: close_sinks
+    StreamController<QuerySnapshot> controller1 =
+        StreamController<QuerySnapshot>.broadcast();
+    controller1.addStream(mainStream);
+
+    var classSectionFilter = StreamTransformer.fromHandlers(
+        handleData: (QuerySnapshot querySnapshot, EventSink<dynamic> sink) {
+      List<Map<String, dynamic>> rollFilteredList = [];
+      for (DocumentChange documentChange in querySnapshot.docChanges) {
+        if (documentChange.doc.id == docName) {
+          for (Map<String, dynamic> map
+              in documentChange.doc.data()["requests"]) {
+            rollFilteredList.add(map);
+          }
+          sink.add(rollFilteredList);
+          break;
+        }
+      }
+    });
+    controller1.stream.transform(classSectionFilter).pipe(controller2);
+
+    return controller2.stream;
+  }
+
   Future<void> setRequestResponse(
       bool response, Timestamp timestamp, String rollno) async {
     Staff staff = await getIt.getAsync<Staff>();
