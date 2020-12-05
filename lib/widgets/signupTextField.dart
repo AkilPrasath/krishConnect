@@ -12,6 +12,8 @@ class SignupTextField extends StatelessWidget {
     this.controller,
     this.onChanged,
     this.isNumber,
+    this.maxLines,
+    this.onTap,
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -19,10 +21,11 @@ class SignupTextField extends StatelessWidget {
   final bool isEmail;
   final bool isNumber;
   final bool isPassword;
+  final int maxLines;
   bool enabled = false;
   final Function onSaved;
   final String Function(String) validator;
-  final Function onChanged;
+  final Function onChanged, onTap;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -35,7 +38,9 @@ class SignupTextField extends StatelessWidget {
         color: Colors.blueGrey[900],
       ),
       obscureText: isPassword,
+      onTap: onTap,
       keyboardType: (isNumber ?? false) ? TextInputType.phone : null,
+      maxLines: maxLines ?? 1,
       decoration: InputDecoration(
         enabled: enabled ?? true,
         labelText: "$labelText",

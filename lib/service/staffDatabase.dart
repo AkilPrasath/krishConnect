@@ -8,7 +8,6 @@ import 'package:logger/logger.dart';
 class StaffDatabase {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Future<Map<String, dynamic>> getStaff(String mailName) async {
-    print(" akilakil $mailName");
     DocumentSnapshot staffDoc =
         await _firestore.collection("staffs").doc("$mailName").get();
     if (staffDoc.exists) {
@@ -101,9 +100,10 @@ class StaffDatabase {
     return controller2.stream;
   }
 
-
   Stream<dynamic> allRequestStream(Staff staff) {
-    String docName=staff.tutor["semester"].toString()+staff.tutor["department"]+staff.tutor["section"];
+    String docName = staff.tutor["semester"].toString() +
+        staff.tutor["department"] +
+        staff.tutor["section"];
     Stream<QuerySnapshot> mainStream =
         _firestore.collection("requests").snapshots();
 
@@ -153,5 +153,32 @@ class StaffDatabase {
             staff.tutor["department"] +
             staff.tutor["section"])
         .set({"requests": docs});
+  }
+
+  Future<void> postAnnouncement(Map announcementData) async {
+    Staff staff = await getIt.getAsync<Staff>();
+    String className = announcementData["class"].toString().split("-").join("");
+    Logger().w(className);
+    await _firestore.runTransaction((Transaction transaction) async {
+      DocumentSnapshot classDoc = await transaction
+          .get(_firestore.collection("announcements").doc("$className"));
+      List announcementList = classDoc.data()["announcements"] ?? [];
+      Map<String, dynamic> data = {
+        "body": announcementData["body"],
+        "lastData": announcementData["lastDate"],
+        "name": {
+          staff.mail.split("@")[0]: staff.name,
+        },
+        "priority": announcementData["priority"],
+        "response": {},
+        "timestamp": DateTime.now(),
+        "type": announcementData["type"],
+      };
+      announcementList.add(data);
+      transaction.update(
+        _firestore.collection("announcements").doc("$className"),
+        {"announcements": announcementList},
+      );
+    });
   }
 }

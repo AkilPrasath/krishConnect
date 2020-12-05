@@ -232,10 +232,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                     //TODO: dummy mail added
                                     SignupResult signupResult =
                                         await getIt<Authentication>().signUp(
-
-                                            // _email + "@skcet.ac.in", _password);
-                                            _email + "@gmail.com",
-                                            _password);
+                                            _email + "@skcet.ac.in", _password);
+                                    // _email + "@gmail.com",
+                                    // _password);
                                     setState(() {
                                       load = false;
                                     });

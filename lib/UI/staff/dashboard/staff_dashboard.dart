@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
+import 'package:krish_connect/UI/staff/post_announcements.dart';
 import 'package:krish_connect/UI/staff/viewAllRequestsPage.dart';
 import 'package:krish_connect/UI/student/dashboard/student_dashboard.dart';
 
@@ -164,6 +165,105 @@ class _StaffDashboardState extends State<StaffDashboard> {
                                             }
                                           }),
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16.0, vertical: 8),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                "Announcements",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Icon(Icons.chevron_right),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Container(
+                                          width: double.maxFinite,
+                                          height: screenHeight * 0.2,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8.0,
+                                                        vertical: 8),
+                                                child: Lottie.asset(
+                                                    "assets/lottie/phone_announcement.json"),
+                                              ),
+                                              Flexible(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      InkWell(
+                                                        onTap: () {
+                                                          Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          PostAnnouncementPage()));
+                                                        },
+                                                        child: FaIcon(
+                                                          FontAwesomeIcons
+                                                              .plusCircle,
+                                                          color:
+                                                              Colors.blue[600],
+                                                          size: 40,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 8),
+                                                      Flexible(
+                                                          child: Text(
+                                                        "Communicate the SKCET way...",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              Colors.blueGrey,
+                                                        ),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      )),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                         ],
@@ -200,11 +300,13 @@ class StudentPermissionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         onTap: () {
           showDialog(
-            context: context,
-            builder: (context){
-              return Center(child: ExpandedStudentPermissionCard(announcementMap: announcementMap, screenWidth:screenWidth));
-            }
-          );
+              context: context,
+              builder: (context) {
+                return Center(
+                    child: ExpandedStudentPermissionCard(
+                        announcementMap: announcementMap,
+                        screenWidth: screenWidth));
+              });
         },
         child: Container(
           width: 0.8 * screenWidth,
@@ -271,8 +373,7 @@ class StudentPermissionCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                   child: LinkWell(
-                    // "${announcementMap["body"]}",
-                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "${announcementMap["body"]}",
                     linkStyle: TextStyle(
                       fontSize: 13,
                       color: Colors.blue[700],
@@ -361,7 +462,6 @@ class StudentPermissionCard extends StatelessWidget {
     );
   }
 
-
   Future<void> sendResponse({BuildContext context, bool response}) async {
     await getIt<StaffDatabase>().setRequestResponse(
         response, announcementMap["timestamp"], announcementMap["rollno"]);
@@ -371,8 +471,6 @@ class StudentPermissionCard extends StatelessWidget {
       content: Text("Responded successfully!"),
     ));
   }
-  
-
 }
 
 class ExpandedStudentPermissionCard extends StatelessWidget {
@@ -393,9 +491,7 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: () {
-         
-        },
+        onTap: () {},
         child: Container(
           width: 0.8 * screenWidth,
           decoration: BoxDecoration(
@@ -406,7 +502,7 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
             child: SingleChildScrollView(
-                          child: Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Align(
@@ -459,11 +555,10 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 8),
                     child: LinkWell(
-                      // "${announcementMap["body"]}",
-                      '''aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa''',
+                      "${announcementMap["body"]}",
                       linkStyle: TextStyle(
                         fontSize: 13,
                         color: Colors.blue[700],
@@ -524,7 +619,8 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
                             size: 20,
                           ),
                           onPressed: () async {
-                            await sendResponse(context: context, response: true);
+                            await sendResponse(
+                                context: context, response: true);
                           },
                         ),
                       ),
@@ -536,37 +632,41 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
                             size: 20,
                           ),
                           onPressed: () async {
-                            await sendResponse(context: context, response: false);
+                            await sendResponse(
+                                context: context, response: false);
                           },
                         ),
                       ),
                     ],
                   ),
                   Align(
-                alignment: Alignment.center,
-                child: InkWell(
-                  onTap: () {
-                    // Navigator.pushReplacementNamed(
-                    //   context,
-                    //   ViewAllAnnouncementPage.id,
-                    // );
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder:(context)=>ViewAllRequestsPage() ));
-                  },
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(left: 8, right: 8, bottom: 8.0),
-                    child: Text(
-                      "View All",
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        decoration: TextDecoration.underline,
-                        color: Colors.blue[800],
-                        fontWeight: FontWeight.w600,
+                    alignment: Alignment.center,
+                    child: InkWell(
+                      onTap: () {
+                        // Navigator.pushReplacementNamed(
+                        //   context,
+                        //   ViewAllAnnouncementPage.id,
+                        // );
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ViewAllRequestsPage()));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 8, right: 8, bottom: 8.0),
+                        child: Text(
+                          "View All",
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue[800],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
                 ],
               ),
             ),
@@ -576,8 +676,6 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
     );
   }
 
-
-    
   Future<void> sendResponse({BuildContext context, bool response}) async {
     await getIt<StaffDatabase>().setRequestResponse(
         response, announcementMap["timestamp"], announcementMap["rollno"]);
@@ -588,4 +686,3 @@ class ExpandedStudentPermissionCard extends StatelessWidget {
     ));
   }
 }
-  
