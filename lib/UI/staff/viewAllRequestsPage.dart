@@ -39,7 +39,7 @@ class _ViewAllRequestsPageState extends State<ViewAllRequestsPage>
         appBar: AppBar(
           elevation: 0,
           title: Text(
-            "Requests",
+            "Review Requests",
             style: TextStyle(
               color: Colors.blue[700],
             ),
@@ -98,7 +98,7 @@ class _ViewAllRequestsPageState extends State<ViewAllRequestsPage>
                             itemCount: announcementList.length,
                             shrinkWrap: true,
                             itemBuilder: (context, int index) {
-                              return InkWell(
+                              return GestureDetector(
                                 onTap: () {
                                   setState(() {
                                     selectedCardIndex =
@@ -158,7 +158,7 @@ class AnimatedNewsCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Container(
         width: 0.8 * screenWidth,
-        height: !resized ? 0.15 * screenHeight : null,
+        height: !resized ? 0.2 * screenHeight : null,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
         ),

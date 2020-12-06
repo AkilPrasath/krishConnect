@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:krish_connect/UI/staff/announcement_list.dart';
 import 'package:krish_connect/UI/student/student_requests.dart';
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
@@ -31,6 +32,7 @@ class _PostAnnouncementPageState extends State<PostAnnouncementPage> {
   List<String> classList;
   String announcementType = "broadcast";
   String selectedDestinationClass;
+  bool firstLoad = true;
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   setStaffSubjectData() {
     // Logger().w(staff.subjects);
@@ -174,6 +176,8 @@ class _PostAnnouncementPageState extends State<PostAnnouncementPage> {
                                                     selectedDestinationClass =
                                                         curClass;
                                                   });
+                                                  Logger().i(
+                                                      selectedDestinationClass);
                                                 },
                                               ),
                                             ],
@@ -429,8 +433,12 @@ class _PostAnnouncementPageState extends State<PostAnnouncementPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   staff = snapshot.data;
-                  setStaffSubjectData();
-                  return Container();
+                  if (firstLoad) {
+                    setStaffSubjectData();
+
+                    firstLoad = false;
+                  }
+                  return AnnouncementListStaff(staff: staff);
                 }
                 return Center(
                   child: CircularProgressIndicator(),

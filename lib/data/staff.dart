@@ -8,7 +8,10 @@ class Staff {
   bool locationPrivacy;
   String location;
   String phoneNumber;
+
+  /// list of maps in this format {"semester":1,"department":CSE,"section":A,"code":18cs493}
   List<dynamic> subjects;
+
   Map<String, dynamic> tutor;
   bool isEmpty;
   Staff({

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
+import 'package:krish_connect/UI/staff/post_announcements.dart';
+import 'package:krish_connect/UI/staff/viewAllRequestsPage.dart';
 
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
@@ -125,10 +127,22 @@ class _StaffDrawerMenuState extends State<StaffDrawerMenu> {
                     DrawerItem(
                       iconData: FontAwesomeIcons.bullhorn,
                       text: "Announcements",
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PostAnnouncementPage()));
+                      },
                     ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.fileImport,
-                      text: "My Requests",
+                      text: "Review Requests",
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ViewAllRequestsPage()));
+                      },
                     ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.cog,

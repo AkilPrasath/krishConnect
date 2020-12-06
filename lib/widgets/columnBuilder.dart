@@ -23,6 +23,11 @@ class ColumnBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Column(
+      crossAxisAlignment: crossAxisAlignment,
+      mainAxisAlignment: mainAxisAlignment,
+      mainAxisSize: mainAxisSize,
+      verticalDirection: verticalDirection,
+      textDirection: textDirection,
       children: new List.generate(
           this.itemCount, (index) => this.itemBuilder(context, index)).toList(),
     );

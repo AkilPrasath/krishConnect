@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 
 class StaffDatabase {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Logger logger = Logger();
   Future<Map<String, dynamic>> getStaff(String mailName) async {
     DocumentSnapshot staffDoc =
         await _firestore.collection("staffs").doc("$mailName").get();
@@ -41,9 +42,10 @@ class StaffDatabase {
       "tutor": tutorMap,
       "mail": mail,
     });
-    Logger log = Logger();
-    log.wtf(tutorMap);
-    if (tutorMap != null) {
+
+    logger.wtf(tutorMap);
+    if (tutorMap != null && tutorMap.isNotEmpty) {
+      logger.i(tutorMap);
       DocumentSnapshot tutorDoc = await _firestore
           .collection("departments")
           .doc("${tutorMap["department"]}")
@@ -52,8 +54,9 @@ class StaffDatabase {
           .collection("tutors")
           .doc("${tutorMap["section"]}")
           .get();
-      log.wtf(tutorDoc.data());
-      Map<String, dynamic> map = tutorDoc.data()["tutors"];
+      logger.wtf(tutorDoc.data());
+      Map<String, dynamic> map =
+          (tutorDoc.data() == null) ? {} : tutorDoc.data()["tutors"];
       map["$name"] = mail;
       await _firestore
           .collection("departments")
@@ -180,5 +183,43 @@ class StaffDatabase {
         {"announcements": announcementList},
       );
     });
+  }
+
+  Stream getAnnouncementStream({Staff staff, dynamic subjectMap}) {
+    String docName = "";
+    String sem = subjectMap["semester"].toString();
+    String dep = subjectMap["department"].toString();
+    String sec = subjectMap["section"].toString();
+    docName = sem + dep + sec;
+    // logger.w(className);
+
+    Stream<QuerySnapshot> mainStream =
+        _firestore.collection("announcements").snapshots();
+
+    StreamController controller2 = StreamController.broadcast();
+    // ignore: close_sinks
+    StreamController<QuerySnapshot> controller1 =
+        StreamController<QuerySnapshot>.broadcast();
+    controller1.addStream(mainStream);
+
+    var classSectionFilter = StreamTransformer.fromHandlers(
+        handleData: (QuerySnapshot querySnapshot, EventSink<dynamic> sink) {
+      List<Map<String, dynamic>> rollFilteredList = [];
+      for (DocumentChange documentChange in querySnapshot.docChanges) {
+        if (documentChange.doc.id == docName) {
+          for (Map<String, dynamic> map
+              in documentChange.doc.data()["announcements"]) {
+            rollFilteredList.add(map);
+          }
+          rollFilteredList = rollFilteredList.reversed
+              .toList(); //sorted with the newest on top
+          sink.add(rollFilteredList);
+          break;
+        }
+      }
+    });
+    controller1.stream.transform(classSectionFilter).pipe(controller2);
+
+    return controller2.stream;
   }
 }

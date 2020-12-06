@@ -165,107 +165,94 @@ class _StaffDashboardState extends State<StaffDashboard> {
                                             }
                                           }),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16.0, vertical: 8),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                "Announcements",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              Icon(Icons.chevron_right),
-                                            ],
-                                          ),
-                                        ),
+                                  ],
+                                ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Announcements",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
+                                    Icon(Icons.chevron_right),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                width: double.maxFinite,
+                                height: screenHeight * 0.2,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: [
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0),
-                                      child: Card(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        child: Container(
-                                          width: double.maxFinite,
-                                          height: screenHeight * 0.2,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8.0,
-                                                        vertical: 8),
-                                                child: Lottie.asset(
-                                                    "assets/lottie/phone_announcement.json"),
+                                          horizontal: 8.0, vertical: 8),
+                                      child: Lottie.asset(
+                                          "assets/lottie/phone_announcement.json"),
+                                    ),
+                                    Flexible(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            PostAnnouncementPage()));
+                                              },
+                                              child: FaIcon(
+                                                FontAwesomeIcons.plusCircle,
+                                                color: Colors.blue[600],
+                                                size: 40,
                                               ),
-                                              Flexible(
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      InkWell(
-                                                        onTap: () {
-                                                          Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          PostAnnouncementPage()));
-                                                        },
-                                                        child: FaIcon(
-                                                          FontAwesomeIcons
-                                                              .plusCircle,
-                                                          color:
-                                                              Colors.blue[600],
-                                                          size: 40,
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 8),
-                                                      Flexible(
-                                                          child: Text(
-                                                        "Communicate the SKCET way...",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color:
-                                                              Colors.blueGrey,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      )),
-                                                    ],
-                                                  ),
-                                                ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Flexible(
+                                                child: Text(
+                                              "Communicate the SKCET way...",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.blueGrey,
                                               ),
-                                            ],
-                                          ),
+                                              textAlign: TextAlign.center,
+                                            )),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     );
