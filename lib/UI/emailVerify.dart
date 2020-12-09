@@ -129,7 +129,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                                 setState(() {
                                   isButtonDisabled = false;
                                   validityText =
-                                      "Link will become invalid in 2 minutes";
+                                      "Link will become invalid in 10 minutes";
                                   checkLinkSent = true;
                                 });
                               } else {
@@ -207,8 +207,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   emailVerifyProcess() async {
-    for (int i = 0; i < 40; i++) {
-      sleep(Duration(seconds: 3));
+    for (int i = 0; i < 300; i++) {
+      sleep(Duration(seconds: 2));
       bool check = await getIt<Authentication>().checkEmailVerified();
       if (check) {
         flag = 1;

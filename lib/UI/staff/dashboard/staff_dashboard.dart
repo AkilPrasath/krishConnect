@@ -171,256 +171,269 @@ class _StaffDashboardState extends State<StaffDashboard> {
                             ),
                           ),
                         ),
-                        title: Text(
-                          "KRISH CONNECT",
-                          style: TextStyle(
-                            color: Colors.blue[700],
+                        title: Hero(
+                          tag: Key("appLogo"),
+                          child: Text(
+                            "KRISH CONNECT",
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                            ),
                           ),
                         ),
                       ),
                       backgroundColor: Colors.transparent,
-                      body: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          snapshot.data.tutor == null
-                              ? Container()
-                              : Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16.0, vertical: 8),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                "Recent Requests",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
+                      body: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            snapshot.data.tutor == null
+                                ? Container()
+                                : Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0, vertical: 8),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  "Recent Requests",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
-                                              ),
-                                              Icon(Icons.chevron_right),
-                                            ],
+                                                Icon(Icons.chevron_right),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      height: 0.249 * screenHeight,
-                                      child: StreamBuilder(
-                                          stream: getIt<StaffDatabase>()
-                                              .requestsStream(snapshot.data),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.data == null) {
-                                              return Lottie.asset(
-                                                  "assets/lottie/33356-hacker.json");
-                                            }
-                                            if (snapshot.data.length == 0) {
-                                              return Lottie.asset(
-                                                  "assets/lottie/33356-hacker.json");
-                                            }
-                                            if (snapshot.hasData) {
-                                              return Swiper(
-                                                onTap: (int index) {},
-                                                onIndexChanged: (int index) {},
-                                                layout: SwiperLayout.STACK,
-                                                itemCount: snapshot.data.length,
-                                                itemWidth: 0.8 * screenWidth,
-                                                itemBuilder:
-                                                    (context, int index) {
-                                                  return StudentPermissionCard(
-                                                      screenWidth: screenWidth,
-                                                      announcementMap:
-                                                          snapshot.data[index]);
-                                                },
-                                              );
-                                            } else {
-                                              return Center(
-                                                  child:
-                                                      CircularProgressIndicator());
-                                            }
-                                          }),
-                                    ),
-                                  ],
-                                ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Announcements",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                      Container(
+                                        height: 0.249 * screenHeight,
+                                        child: StreamBuilder(
+                                            stream: getIt<StaffDatabase>()
+                                                .requestsStream(snapshot.data),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.data == null) {
+                                                return Lottie.asset(
+                                                    "assets/lottie/33356-hacker.json");
+                                              }
+                                              if (snapshot.data.length == 0) {
+                                                return Lottie.asset(
+                                                    "assets/lottie/33356-hacker.json");
+                                              }
+                                              if (snapshot.hasData) {
+                                                return Swiper(
+                                                  onTap: (int index) {},
+                                                  onIndexChanged:
+                                                      (int index) {},
+                                                  layout: SwiperLayout.STACK,
+                                                  itemCount:
+                                                      snapshot.data.length,
+                                                  itemWidth: 0.8 * screenWidth,
+                                                  itemBuilder:
+                                                      (context, int index) {
+                                                    return StudentPermissionCard(
+                                                        screenWidth:
+                                                            screenWidth,
+                                                        announcementMap:
+                                                            snapshot
+                                                                .data[index]);
+                                                  },
+                                                );
+                                              } else {
+                                                return Center(
+                                                    child:
+                                                        CircularProgressIndicator());
+                                              }
+                                            }),
                                       ),
-                                    ),
-                                    Icon(Icons.chevron_right),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Container(
-                                width: double.maxFinite,
-                                height: screenHeight * 0.2,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0, vertical: 8),
-                                      child: Lottie.asset(
-                                          "assets/lottie/phone_announcement.json"),
-                                    ),
-                                    Flexible(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            PostAnnouncementPage()));
-                                              },
-                                              child: FaIcon(
-                                                FontAwesomeIcons.plusCircle,
-                                                color: Colors.blue[600],
-                                                size: 40,
-                                              ),
-                                            ),
-                                            SizedBox(height: 8),
-                                            Flexible(
-                                                child: Text(
-                                              "Communicate the SKCET way...",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.blueGrey,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            )),
-                                          ],
+                                    ],
+                                  ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 8),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Announcements",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      Icon(Icons.chevron_right),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Track Students",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PostAnnouncementPage()));
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Container(
+                                    width: double.maxFinite,
+                                    height: screenHeight * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                    Icon(Icons.chevron_right),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Container(
-                                width: double.maxFinite,
-                                height: screenHeight * 0.2,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            TrackStudentsPage()));
-                                              },
-                                              child: FaIcon(
-                                                FontAwesomeIcons.searchLocation,
-                                                color: Colors.blue[600],
-                                                size: 40,
-                                              ),
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 8),
+                                          child: Lottie.asset(
+                                              "assets/lottie/phone_announcement.json"),
+                                        ),
+                                        Flexible(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                FaIcon(
+                                                  FontAwesomeIcons.plusCircle,
+                                                  color: Colors.blue[600],
+                                                  size: 40,
+                                                ),
+                                                SizedBox(height: 8),
+                                                Flexible(
+                                                    child: Text(
+                                                  "Communicate the SKCET way...",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.blueGrey,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                )),
+                                              ],
                                             ),
-                                            SizedBox(height: 8),
-                                            Flexible(
-                                                child: Text(
-                                              "Know your students better...",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.blueGrey,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            )),
-                                          ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 8),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Track Students",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0, vertical: 8),
-                                      child: Lottie.asset(
-                                          "assets/lottie/gps.json"),
-                                    ),
-                                  ],
+                                      Icon(Icons.chevron_right),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  Staff staff = await getIt.getAsync<Staff>();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              TrackStudentsPage(
+                                                staff: staff,
+                                              )));
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Container(
+                                    width: double.maxFinite,
+                                    height: screenHeight * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                FaIcon(
+                                                  FontAwesomeIcons
+                                                      .searchLocation,
+                                                  color: Colors.blue[600],
+                                                  size: 40,
+                                                ),
+                                                SizedBox(height: 8),
+                                                Flexible(
+                                                    child: Text(
+                                                  "Know your students better...",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.blueGrey,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                )),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 8),
+                                          child: Lottie.asset(
+                                              "assets/lottie/gps.json"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   } else {

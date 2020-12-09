@@ -177,10 +177,13 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                title: Text(
-                  "KRISH CONNECT",
-                  style: TextStyle(
-                    color: Colors.blue[700],
+                title: Hero(
+                  tag: Key("appLogo"),
+                  child: Text(
+                    "KRISH CONNECT",
+                    style: TextStyle(
+                      color: Colors.blue[700],
+                    ),
                   ),
                 ),
               ),

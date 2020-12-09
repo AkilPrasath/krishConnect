@@ -115,11 +115,14 @@ class _SignupScreenState extends State<SignupScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        "Krish Connect",
-                        style: GoogleFonts.josefinSans(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
+                      child: Hero(
+                        tag: Key("appLogo"),
+                        child: Text(
+                          "Krish Connect",
+                          style: GoogleFonts.josefinSans(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),

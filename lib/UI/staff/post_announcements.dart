@@ -194,7 +194,7 @@ class _PostAnnouncementPageState extends State<PostAnnouncementPage> {
                                           children: <Widget>[
                                             RequestReasonSelectorItem(
                                               isSelected: !prioritySelected,
-                                              text: "Usual🧊",
+                                              text: "Usual❄️",
                                               onTap: () {
                                                 if (prioritySelected == false) {
                                                   setState(() {

@@ -279,4 +279,8 @@ class StaffDatabase {
   Stream<DocumentSnapshot> responseStatStream(String className) {
     return _firestore.collection("announcements").doc("$className").snapshots();
   }
+
+  Stream<DocumentSnapshot> getStudentStream(String rollno) {
+    return _firestore.collection("students").doc(rollno).snapshots();
+  }
 }

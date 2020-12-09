@@ -183,11 +183,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        "Krish Connect",
-                        style: GoogleFonts.josefinSans(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
+                      child: Hero(
+                        tag: Key("appLogo"),
+                        child: Text(
+                          "Krish Connect",
+                          style: GoogleFonts.josefinSans(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
@@ -216,8 +219,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 labelText: "Email",
                                 onSaved: (value) {
                                   // TODO: dummy
-                                  // _email = value + "@skcet.ac.in";
-                                  _email = value + "@gmail.com";
+                                  _email = value + "@skcet.ac.in";
+                                  // _email = value + "@gmail.com";
                                   RegExp studentRegex =
                                       RegExp(r"[0-9]{2}[a-zA-Z]{4}[0-9]{3}");
                                   if (studentRegex.stringMatch(value) == null) {

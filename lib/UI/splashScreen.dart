@@ -82,15 +82,25 @@ class _SplashScreenState extends State<SplashScreen> {
       child: Scaffold(
         body: Container(
           child: Center(
-            child: Hero(
-              tag: Key("appLogo"),
-              child: Text(
-                "Krish Connect",
-                style: GoogleFonts.josefinSans(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 200,
+                  child: Image.asset("assets/images/icon.png"),
                 ),
-              ),
+                SizedBox(height: 8),
+                Hero(
+                  tag: Key("appLogo"),
+                  child: Text(
+                    "Krish Connect",
+                    style: GoogleFonts.josefinSans(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

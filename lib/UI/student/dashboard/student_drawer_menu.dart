@@ -145,13 +145,37 @@ class _DrawerMenuState extends State<DrawerMenu> {
                         Navigator.pushNamed(context, RequestStudent.id);
                       },
                     ),
-                    DrawerItem(
-                      iconData: FontAwesomeIcons.cog,
-                      text: "Settings",
-                    ),
+                    // DrawerItem(
+                    //   iconData: FontAwesomeIcons.cog,
+                    //   text: "Settings",
+                    // ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.infoCircle,
                       text: "About",
+                      onTap: () {
+                        showAboutDialog(
+                          context: context,
+                          applicationName: "Krish Connect",
+                          applicationVersion: "1.0.0+1",
+                          applicationIcon: FlutterLogo(),
+                          children: [
+                            Text(
+                              "Developers",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Abishek Ganesh ",
+                              style: TextStyle(),
+                            ),
+                            Text("Akil Prasath R "),
+                            Text("Akshayavarshini P "),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),

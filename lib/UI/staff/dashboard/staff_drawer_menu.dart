@@ -64,56 +64,64 @@ class _StaffDrawerMenuState extends State<StaffDrawerMenu> {
                       height: 0.15 * height,
                       color: Colors.white12,
                     ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            height: 0.08 * height,
-                          ),
-                          Container(
-                            height: 0.25 * width,
-                            width: 0.25 * width,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  "assets/images/circleAvatar.png",
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              "Akil Stark",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "CSE",
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 11,
+                    FutureBuilder<Staff>(
+                        future: getIt.getAsync<Staff>(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData)
+                            return Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SizedBox(
+                                    height: 0.08 * height,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                                  Container(
+                                    height: 0.25 * width,
+                                    width: 0.25 * width,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                          "assets/images/circleAvatar.png",
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      "${snapshot.data.name}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "${snapshot.data.mail}",
+                                          style: TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          else {
+                            return SizedBox();
+                          }
+                        }),
                   ],
                 ),
               ),
@@ -144,13 +152,37 @@ class _StaffDrawerMenuState extends State<StaffDrawerMenu> {
                                 builder: (context) => ViewAllRequestsPage()));
                       },
                     ),
-                    DrawerItem(
-                      iconData: FontAwesomeIcons.cog,
-                      text: "Settings",
-                    ),
+                    // DrawerItem(
+                    //   iconData: FontAwesomeIcons.cog,
+                    //   text: "Settings",
+                    // ),
                     DrawerItem(
                       iconData: FontAwesomeIcons.infoCircle,
                       text: "About",
+                      onTap: () {
+                        showAboutDialog(
+                          context: context,
+                          applicationName: "Krish Connect",
+                          applicationVersion: "1.0.0+1",
+                          applicationIcon: FlutterLogo(),
+                          children: [
+                            Text(
+                              "Developers",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Abishek Ganesh ",
+                              style: TextStyle(),
+                            ),
+                            Text("Akil Prasath R "),
+                            Text("Akshayavarshini P "),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),

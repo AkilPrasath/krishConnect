@@ -7,11 +7,14 @@ import 'package:krish_connect/UI/student/ViewAllContacts.dart';
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
+import 'package:krish_connect/service/staffDatabase.dart';
 import 'package:krish_connect/service/studentDatabase.dart';
 import 'package:krish_connect/widgets/appBackground.dart';
 import 'package:logger/logger.dart';
 
 class TrackStudentsPage extends StatefulWidget {
+  final Staff staff;
+  TrackStudentsPage({@required this.staff});
   @override
   _TrackStudentsPageState createState() => _TrackStudentsPageState();
 }
@@ -20,10 +23,40 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
   double screenWidth, screenHeight;
   List<QueryDocumentSnapshot> list;
   String selectedClass = "";
+  List<String> classNamesList;
+  Staff staff;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    staff = widget.staff;
+    classNamesList = [];
+    staff.subjects.forEach((map) {
+      String className = map["semester"].toString() +
+          "-" +
+          map["department"] +
+          "-" +
+          map["section"];
+      classNamesList.add(className);
+    });
+    if (staff.tutor != null && staff.tutor != {}) {
+      String className = staff.tutor["semester"].toString() +
+          "-" +
+          staff.tutor["department"] +
+          "-" +
+          staff.tutor["section"];
+      if (!classNamesList.contains(className)) {
+        classNamesList.add(className);
+      }
+    }
+    selectedClass = classNamesList[0];
+  }
+
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
+
     return SafeArea(
       child: AppBackground(
         screenHeight: screenHeight,
@@ -45,7 +78,7 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
               ),
             ),
             title: Text(
-              "KRISH CONNECT",
+              "STUDENTS CONNECTS",
               style: TextStyle(
                 color: Colors.blue[700],
               ),
@@ -53,82 +86,71 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
           ),
           backgroundColor: Colors.transparent,
           body: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             child: Column(
               children: <Widget>[
-                FutureBuilder(
-                  future: getIt.getAsync<Staff>(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return DropdownButton(
-                        value: selectedClass,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedClass = value;
-                          });
-                        },
-                        items: snapshot.data.subjects
-                            .map((subMap) {
-                              return DropdownMenuItem(
-                                  value: subMap["semester"].toString() +
-                                      subMap["department"].toString() +
-                                      subMap["section"].toString(),
-                                  child: Text(subMap["semester"].toString() +
-                                      subMap["department"].toString() +
-                                      subMap["section"].toString()));
-                            })
-                            .cast<DropdownMenuItem<String>>()
-                            .toList(),
-                      );
-                    } else {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                ),
+                DropdownButton(
+                    value: selectedClass,
+                    items: classNamesList
+                        .map<DropdownMenuItem<String>>((className) {
+                      return DropdownMenuItem(
+                          value: className, child: Text(className));
+                    }).toList(),
+                    onChanged: (String className) {
+                      setState(() {
+                        selectedClass = className;
+                      });
+                    }),
                 FutureBuilder<List<QueryDocumentSnapshot>>(
                     future: getIt.get<StudentDatabase>().getAllStudents(),
                     builder: (context, snapshot) {
-                      list = [];
-                      snapshot.data.forEach((doc) {
-                        String className = doc.data()["semester"].toString() +
-                            doc.data()["department"] +
-                            doc.data()["section"];
-                        if (className == selectedClass) {
-                          list.add(doc);
-                        }
-                      });
-
-                      return Container(
-                        height: screenHeight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: GridView.builder(
-                            physics: BouncingScrollPhysics(),
-                            itemCount: list.length,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
-                            itemBuilder: (context, index) {
-                              return InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  bottomSheet(context, snapshot.data[index].id);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: StaffGridItem(
-                                    queryDoc: list[index],
+                      if (snapshot.hasData) {
+                        list = [];
+                        snapshot.data.forEach((doc) {
+                          String className = doc.data()["semester"].toString() +
+                              doc.data()["department"] +
+                              doc.data()["section"];
+                          if (className == selectedClass.split("-").join()) {
+                            list.add(doc);
+                          }
+                        });
+                        Logger().i(snapshot.data.toString());
+                        return Container(
+                          height: screenHeight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: GridView.builder(
+                              physics: BouncingScrollPhysics(),
+                              itemCount: list.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () {
+                                    bottomSheet(
+                                        context, snapshot.data[index].id);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: StudentGridItem(
+                                      queryDoc: list[index],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
                     }),
               ],
             ),
@@ -144,7 +166,7 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
         backgroundColor: Colors.transparent,
         builder: (context) {
           return StreamBuilder<DocumentSnapshot>(
-              stream: getIt<StudentDatabase>().getStaffStream(docId),
+              stream: getIt<StaffDatabase>().getStudentStream(docId),
               builder: (context, snapshot) {
                 if (snapshot.hasData)
                   return Container(
@@ -296,5 +318,76 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
                 );
               });
         });
+  }
+}
+
+class StudentGridItem extends StatelessWidget {
+  const StudentGridItem({
+    @required this.queryDoc,
+    Key key,
+  }) : super(key: key);
+  final QueryDocumentSnapshot queryDoc;
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
+      return Container(
+        // color: Colors.blue,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: constraints.biggest.height / 2,
+              width: constraints.biggest.width / 2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xffFF6A83),
+                    Color(0xffF98875),
+                    Color(0xffF3A866),
+                    // Colors.blue,
+                    // Colors.blue[400],
+                    // Colors.blue[200],
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: FittedBox(
+                    child: Text(
+                      "${queryDoc.data()["name"].toString().toUpperCase().substring(0, 1)}",
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Color(0xffFF6A83),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "${queryDoc.data()["name"].toString()}",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            FittedBox(
+              child: Text(
+                "${queryDoc.data()["rollno"].toString()}",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
