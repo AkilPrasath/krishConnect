@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jiffy/jiffy.dart';
 
 class CustomExpandableListTile extends StatelessWidget {
   const CustomExpandableListTile({Key key, this.studentMap}) : super(key: key);
@@ -24,7 +25,10 @@ class CustomExpandableListTile extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        title: Text("${studentMap["reason"]}"),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text("${Jiffy(studentMap["timestamp"].toDate()).fromNow()}"),
+        ),
         subtitle: Row(
           children: [
             studentMap["response"] == 0

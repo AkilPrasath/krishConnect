@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:krish_connect/UI/staff/ViewStats.dart';
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/staffDatabase.dart';
@@ -116,6 +117,7 @@ class _AnnouncementListStaffState extends State<AnnouncementListStaff> {
                                 });
                               },
                               child: AnimatedAnnouncementCard(
+                                classNameMap: classList[classIndex],
                                 announcementMap: snapshot.data[cardIndex],
                                 resized: selectedClassIndex == classIndex &&
                                     selectedCardIndex == cardIndex,
@@ -146,6 +148,7 @@ class _AnnouncementListStaffState extends State<AnnouncementListStaff> {
 class AnimatedAnnouncementCard extends StatelessWidget {
   double screenWidth, screenHeight;
   bool resized;
+  Map classNameMap;
 
   String relativeTime;
   Map<String, dynamic> announcementMap;
@@ -153,6 +156,7 @@ class AnimatedAnnouncementCard extends StatelessWidget {
   AnimatedAnnouncementCard({
     @required this.resized,
     @required this.announcementMap,
+    @required this.classNameMap,
   }) {
     relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
   }
@@ -250,6 +254,76 @@ class AnimatedAnnouncementCard extends StatelessWidget {
                 ),
               ),
             ),
+            resized
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: "Responded: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Colors.blueGrey[600],
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: announcementMap["response"]
+                                      .keys
+                                      .toList()
+                                      .length
+                                      .toString(),
+                                  style: TextStyle(
+                                    color: Colors.blueGrey[400],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          RaisedButton(
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            color: Colors.blue,
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ViewStats(
+                                            classNameMap: classNameMap,
+                                            announcementMap: announcementMap,
+                                          )));
+                            },
+                            child: Row(
+                              children: [
+                                FaIcon(
+                                  FontAwesomeIcons.chartLine,
+                                  color: Colors.lightGreenAccent,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 4,
+                                ),
+                                Text(
+                                  "Stats",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : SizedBox(),
             !resized
                 ? Center(
                     child: FaIcon(

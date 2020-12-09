@@ -1,16 +1,20 @@
+import 'package:background_fetch/background_fetch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:krish_connect/UI/login.dart';
 import 'package:krish_connect/UI/staff/dashboard/staff_dashboard_screen.dart';
 import 'package:krish_connect/UI/staff/post_announcements.dart';
+import 'package:krish_connect/UI/staff/track_students.dart';
 import 'package:krish_connect/UI/staff/viewAllRequestsPage.dart';
 import 'package:krish_connect/UI/student/dashboard/student_dashboard.dart';
 
 import 'package:krish_connect/data/staff.dart';
 import 'package:krish_connect/main.dart';
+import 'package:krish_connect/service/Geofencing.dart';
 import 'package:krish_connect/service/authentication.dart';
 import 'package:krish_connect/service/staffDatabase.dart';
 import 'package:krish_connect/service/studentDatabase.dart';
@@ -33,6 +37,83 @@ class _StaffDashboardState extends State<StaffDashboard> {
   AnimationController _controller;
   Animation<Offset> _slideAnimation;
   Animation<double> _scaleAnimation;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      LocationPermission locationPermission =
+          await Geolocator.requestPermission();
+      if (!(locationPermission == LocationPermission.denied ||
+          locationPermission == LocationPermission.deniedForever)) {
+        initPlatformState().then((value) {
+          BackgroundFetch.start();
+        });
+      }
+    });
+  }
+
+  Future<void> initPlatformState() async {
+    // Configure BackgroundFetch.
+    BackgroundFetch.configure(
+            BackgroundFetchConfig(
+              minimumFetchInterval: 15,
+              forceAlarmManager: false,
+              stopOnTerminate: false,
+              startOnBoot: true,
+              enableHeadless: true,
+              requiresBatteryNotLow: false,
+              requiresCharging: false,
+              requiresStorageNotLow: false,
+              requiresDeviceIdle: false,
+              requiredNetworkType: NetworkType.NONE,
+            ),
+            _onBackgroundFetch)
+        .then((int status) {
+      print('[BackgroundFetch] configure success: $status');
+    }).catchError((e) {
+      print('[BackgroundFetch] configure ERROR: $e');
+    });
+
+    // Schedule a "one-shot" custom-task in 10000ms.
+    // These are fairly reliable on Android (particularly with forceAlarmManager) but not iOS,
+    // where device must be powered (and delay will be throttled by the OS).
+    BackgroundFetch.scheduleTask(TaskConfig(
+        taskId: "com.transistorsoft.customtask",
+        delay: 10000,
+        periodic: false,
+        forceAlarmManager: true,
+        stopOnTerminate: false,
+        enableHeadless: true));
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+  }
+
+  void _onBackgroundFetch(String taskId) async {
+    // This is the fetch-event callback.
+    print("Akil Background event $taskId");
+    Geofencing fence = Geofencing();
+    await fence.updateLocationCallback();
+
+    if (taskId == "flutter_background_fetch") {
+      // Schedule a one-shot task when fetch event received (for testing).
+      BackgroundFetch.scheduleTask(TaskConfig(
+          taskId: "com.transistorsoft.customtask",
+          delay: 5000,
+          periodic: false,
+          forceAlarmManager: true,
+          stopOnTerminate: false,
+          enableHeadless: true));
+    }
+
+    // IMPORTANT:  You must signal completion of your fetch task or the OS can punish your app
+    // for taking too long in the background.
+    BackgroundFetch.finish(taskId);
+  }
+
   @override
   Widget build(BuildContext context) {
     _controller =
@@ -247,6 +328,92 @@ class _StaffDashboardState extends State<StaffDashboard> {
                                           ],
                                         ),
                                       ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Track Students",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                width: double.maxFinite,
+                                height: screenHeight * 0.2,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            TrackStudentsPage()));
+                                              },
+                                              child: FaIcon(
+                                                FontAwesomeIcons.searchLocation,
+                                                color: Colors.blue[600],
+                                                size: 40,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Flexible(
+                                                child: Text(
+                                              "Know your students better...",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.blueGrey,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            )),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0, vertical: 8),
+                                      child: Lottie.asset(
+                                          "assets/lottie/gps.json"),
                                     ),
                                   ],
                                 ),

@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:background_fetch/background_fetch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:krish_connect/UI/student/ViewAllContacts.dart';
 import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 import 'package:krish_connect/UI/student/student_requests.dart';
 import 'package:krish_connect/UI/student/viewAllAnnouncements.dart';
@@ -33,7 +35,8 @@ final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
   double screenWidth;
   double screenHeight;
-
+  String studentName;
+  bool studentFutureFlag;
   AnimationController _controller;
   Animation<Offset> _slideAnimation;
   Animation<double> _scaleAnimation;
@@ -41,10 +44,17 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
-    Geolocator.requestPermission();
-    initPlatformState().then((value) {
-      BackgroundFetch.start();
+    studentFutureFlag = true;
+    studentName = "";
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      LocationPermission locationPermission =
+          await Geolocator.requestPermission();
+      if (!(locationPermission == LocationPermission.denied ||
+          locationPermission == LocationPermission.deniedForever)) {
+        initPlatformState().then((value) {
+          BackgroundFetch.start();
+        });
+      }
     });
   }
 
@@ -107,6 +117,14 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
     // IMPORTANT:  You must signal completion of your fetch task or the OS can punish your app
     // for taking too long in the background.
     BackgroundFetch.finish(taskId);
+  }
+
+  void refreshName() {
+    if (studentFutureFlag) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        setState(() {});
+      });
+    }
   }
 
   @override
@@ -180,7 +198,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16.0),
                               child: Text(
-                                "Hi Akil,",
+                                "Hi $studentName,",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
@@ -203,6 +221,30 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   Icon(Icons.chevron_right),
+                                  Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ViewAllContacts()));
+                                    },
+                                    child: Text(
+                                      "View All",
+                                      style: TextStyle(
+                                        decoration: TextDecoration.underline,
+                                        color: Colors.blue[800],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  FaIcon(
+                                    FontAwesomeIcons.userAlt,
+                                    size: 14,
+                                    color: Colors.blue,
+                                  ),
                                 ],
                               ),
                             ),
@@ -221,28 +263,41 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                                physics: BouncingScrollPhysics(),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: 5,
-                                itemBuilder: (context, int index) {
-                                  var name = [
-                                    "Akil",
-                                    "Abishek",
-                                    "Akshaya",
-                                    "Mr Stark",
-                                    "Nisha"
-                                  ];
-                                  return StoryItem(
-                                      onTap: () {
-                                        bottomSheet(context);
-                                      },
-                                      screenWidth: screenWidth,
-                                      screenHeight: screenHeight,
-                                      name: name[index]);
-                                },
-                              ),
+                              child: FutureBuilder<List<QueryDocumentSnapshot>>(
+                                  future: getIt<StudentDatabase>()
+                                      .getStaffDetails(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return ListView.builder(
+                                        padding: EdgeInsets.zero,
+                                        physics: BouncingScrollPhysics(),
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: snapshot.data.length >= 6
+                                            ? 6
+                                            : snapshot.data.length,
+                                        itemBuilder: (context, int index) {
+                                          return StoryItem(
+                                              onTap: () {
+                                                bottomSheet(context,
+                                                    snapshot.data[index].id);
+                                              },
+                                              screenWidth: screenWidth,
+                                              screenHeight: screenHeight,
+                                              name: snapshot.data[index]
+                                                  .data()["name"]);
+                                        },
+                                      );
+                                    } else {
+                                      return Center(
+                                        child: Text(
+                                          "No suggested connects right now",
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }),
                             ),
                           ),
                           Align(
@@ -300,16 +355,22 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                           ),
                           FutureBuilder<Student>(
                             future: getIt.getAsync<Student>(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
+                            builder: (context, studentSnapshot) {
+                              if (studentSnapshot.connectionState ==
                                   ConnectionState.waiting)
                                 return Center(
                                   child: CircularProgressIndicator(),
                                 );
-                              if (snapshot.hasData)
+                              if (studentSnapshot.hasData) {
+                                if (studentFutureFlag) {
+                                  studentName = studentSnapshot.data.name;
+                                  refreshName();
+                                  studentFutureFlag = false;
+                                }
                                 return StreamBuilder<dynamic>(
                                   stream: getIt<StudentDatabase>()
-                                      .announcementsStream(snapshot.data),
+                                      .announcementsStream(
+                                          studentSnapshot.data),
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting)
@@ -365,6 +426,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                     }
                                   },
                                 );
+                              }
                             },
                           ),
                           Align(
@@ -403,7 +465,6 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  print("loading future");
                                   return Center(
                                     child: CircularProgressIndicator(),
                                   );
@@ -411,7 +472,7 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
                                 if (!snapshot.hasData) {
                                   // print("no data");
                                   return Center(
-                                    child: Text("no data in future"),
+                                    child: Text("No data"),
                                   );
                                 }
                                 if (snapshot.hasData)
@@ -542,207 +603,174 @@ class _DashBoardState extends State<DashBoard> with TickerProviderStateMixin {
       barrierDismissible: true,
       context: context,
       builder: (context) {
-        return true
-            ? Center(
-                child: ExpandedNewsCard(
-                  announcementMap: announcementMap,
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                ),
-              )
-            : Center(
-                child: Material(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                  color: Colors.transparent,
-                  child: Container(
-                    // color: Colors.white,
-                    width: 0.8 * screenWidth,
-                    height: 0.5 * screenHeight,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [],
-                      color: Colors.white,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          // Text("Announcements",style: ,),
-                          SizedBox(
-                            height: 40,
-                          ),
-                          Text(
-                              "Students please select your elective subjects. I have shared the google sheets link."),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
+        return Center(
+          child: ExpandedNewsCard(
+            announcementMap: announcementMap,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
+          ),
+        );
       },
     );
   }
 
-  bottomSheet(context) {
+  bottomSheet(context, String docId) {
     showBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
         builder: (context) {
-          return Container(
-            height: 0.5 * screenHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  offset: const Offset(0.0, 5.0),
-                  blurRadius: 20.0,
-                  spreadRadius: 10.0,
-                ),
-              ],
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
-              color: Colors.white,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: StoryItem(
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      name: "A",
-                      style: TextStyle(
-                        fontSize: 1,
+          return StreamBuilder<DocumentSnapshot>(
+              stream: getIt<StudentDatabase>().getStaffStream(docId),
+              builder: (context, snapshot) {
+                if (snapshot.hasData)
+                  return Container(
+                    height: 0.35 * screenHeight,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          offset: const Offset(0.0, 5.0),
+                          blurRadius: 20.0,
+                          spreadRadius: 10.0,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(25),
+                        topRight: Radius.circular(25),
                       ),
-                      onTap: () {},
+                      color: Colors.white,
                     ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    "Ms Gwen Stacy",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.compass,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        "Location",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text("MCT block"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.chair,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        "Status     ",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text("Available"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.phoneAlt,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        "Contact  ",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text("9080735855"),
-                      Spacer(),
-                      Material(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        elevation: 1,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () async {
-                            const number = '9080735855'; //set the number here
-                            bool res =
-                                await FlutterPhoneDirectCaller.callNumber(
-                                    number);
-                            print(res);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                FaIcon(
-                                  FontAwesomeIcons.phone,
-                                  color: Colors.blue,
-                                  size: 14,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Text(
-                                    "Call",
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            "${snapshot.data.data()["name"]}",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                      ),
-                      Spacer(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
+                        SizedBox(height: 24),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.compass,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Location",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text("${snapshot.data.data()["location"]}"),
+                              SizedBox(width: 6),
+                              Text(
+                                "${Jiffy(snapshot.data.data()["time"].toDate()).fromNow()}",
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.chair,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Status     ",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text("Available"),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.phoneAlt,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Contact  ",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text("${snapshot.data.data()["phoneNumber"]}"),
+                              Spacer(),
+                              Material(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                elevation: 1,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(10),
+                                  onTap: () async {
+                                    String number =
+                                        snapshot.data.data()["phoneNumber"];
+                                    //set the number here
+                                    bool res = await FlutterPhoneDirectCaller
+                                        .callNumber(number);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        FaIcon(
+                                          FontAwesomeIcons.phone,
+                                          color: Colors.blue,
+                                          size: 14,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: Text(
+                                            "Call",
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Spacer(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              });
         });
   }
 }

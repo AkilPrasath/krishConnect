@@ -36,7 +36,7 @@ dependencies:
   google_fonts: ^1.1.1
   connectivity: ^1.0.0
   numberpicker: ^1.2.1
-  flutter_swiper: ^1.1.6
+  flutter_swiper: ^1.1.6 
   lottie: ^0.6.0
   jiffy: ^3.0.1
   linkwell: ^0.1.9
@@ -45,6 +45,7 @@ dependencies:
   background_fetch: ^0.6.0
   geolocator: ^6.1.6
   logger: ^0.9.4 
+  fl_chart: ^0.12.0
    
 
 

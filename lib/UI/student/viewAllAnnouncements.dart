@@ -139,11 +139,12 @@ class AnimatedNewsCard extends StatelessWidget {
   String relativeTime;
   Map<String, dynamic> announcementMap;
 
-  AnimatedNewsCard({
-    @required this.resized,
-    @required this.announcementMap,
-    @required this.student,
-  }) {
+  AnimatedNewsCard(
+      {@required this.resized,
+      @required this.announcementMap,
+      @required this.student,
+      Key key})
+      : super(key: key) {
     relativeTime = Jiffy(announcementMap["timestamp"].toDate()).fromNow();
     responded = (announcementMap["response"][student.rollno] != null);
   }

@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:krish_connect/data/student.dart';
 import 'package:krish_connect/main.dart';
 import 'package:krish_connect/service/authentication.dart';
+import 'package:logger/logger.dart';
 
 class StudentDatabase {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -20,6 +22,13 @@ class StudentDatabase {
     } else {
       return null;
     }
+  }
+
+  Future<bool> checkLocationPrivacy(String rollno) async {
+    DocumentSnapshot doc =
+        await _firestore.collection("students").doc("$rollno").get();
+    bool locationPrivacy = doc.data()["locationPrivacy"];
+    return locationPrivacy;
   }
 
   Future isStudentExist(String rollno) async {
@@ -241,10 +250,50 @@ class StudentDatabase {
     });
   }
 
-  Future<void> updateLocation(String position) async {
-    await _firestore.collection("students").doc("18eucs008").update({
+  Future<List<QueryDocumentSnapshot>> getStaffDetails() async {
+    List<QueryDocumentSnapshot> staffDocList = [];
+    Student student = await getIt.getAsync<Student>();
+
+    Map classMap = {};
+    classMap["semester"] = student.semester;
+    classMap["department"] = student.department;
+    classMap["section"] = student.section;
+    QuerySnapshot query = await _firestore.collection("staffs").get();
+    for (QueryDocumentSnapshot staffDoc in query.docs) {
+      bool toAdd = false;
+      List subjectsList = staffDoc.data()["subjects"];
+      for (Map subjectMap in subjectsList) {
+        subjectMap.remove("code");
+        if (mapEquals(subjectMap, classMap)) {
+          toAdd = true;
+          break;
+        }
+      }
+      Map tutorMap = staffDoc.data()["tutor"] ?? {};
+      if (mapEquals(tutorMap, classMap)) {
+        toAdd = true;
+      }
+      if (toAdd) {
+        staffDocList.add(staffDoc);
+      }
+    }
+    return Future.value(staffDocList);
+  }
+
+  Future<void> updateLocation(String position, String rollno) async {
+    await _firestore.collection("students").doc("$rollno").update({
       "location": position,
       "time": DateTime.now(),
     });
+    Logger().wtf("student loc updated");
+  }
+
+  Future<List<QueryDocumentSnapshot>> getAllStudents() async {
+    QuerySnapshot doc = await _firestore.collection("students").get();
+    return doc.docs;
+  }
+
+  Stream<DocumentSnapshot> getStaffStream(String docName) {
+    return _firestore.collection("staffs").doc(docName).snapshots();
   }
 }

@@ -18,6 +18,21 @@ class StaffDatabase {
     }
   }
 
+  Future<bool> checkLocationPrivacy(String staffName) async {
+    DocumentSnapshot doc =
+        await _firestore.collection("staffs").doc("$staffName").get();
+    bool locationPrivacy = doc.data()["locationPrivacy"];
+    return locationPrivacy;
+  }
+
+  Future<void> updateLocation(String position, String staffName) async {
+    await _firestore.collection("staffs").doc("$staffName").update({
+      "location": position,
+      "time": DateTime.now(),
+    });
+    Logger().wtf("staff loc updated");
+  }
+
   Future isStaffExist(String mailName) async {
     DocumentSnapshot staffDoc =
         await _firestore.collection("staffs").doc("$mailName").get();
@@ -221,5 +236,47 @@ class StaffDatabase {
     controller1.stream.transform(classSectionFilter).pipe(controller2);
 
     return controller2.stream;
+  }
+
+  Future<Map<String, dynamic>> _countClassStudents(String className) async {
+    int studentsCount = 0;
+    Map<String, dynamic> mapData = {"count": 0, "roll-name": {}};
+    QuerySnapshot querySnapshot = await _firestore.collection("students").get();
+    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+      Map currentData = doc.data();
+      String currentClassName = currentData["semester"].toString() +
+          currentData["department"] +
+          currentData["section"];
+      if (className == currentClassName) {
+        mapData["roll-name"][currentData["rollno"]] = currentData["name"];
+        studentsCount += 1;
+      }
+    }
+    mapData["count"] = studentsCount;
+    return mapData;
+  }
+
+  Stream classStudentsCountStream(String className) {
+    Stream<QuerySnapshot> mainStream =
+        _firestore.collection("students").snapshots();
+
+    StreamController controller2 = StreamController.broadcast();
+    // ignore: close_sinks
+    StreamController<QuerySnapshot> controller1 =
+        StreamController<QuerySnapshot>.broadcast();
+    controller1.addStream(mainStream);
+
+    var classSectionFilter = StreamTransformer.fromHandlers(handleData:
+        (QuerySnapshot querySnapshot, EventSink<dynamic> sink) async {
+      Map<String, dynamic> classMap = await _countClassStudents(className);
+      sink.add(classMap);
+    });
+    controller1.stream.transform(classSectionFilter).pipe(controller2);
+
+    return controller2.stream;
+  }
+
+  Stream<DocumentSnapshot> responseStatStream(String className) {
+    return _firestore.collection("announcements").doc("$className").snapshots();
   }
 }
