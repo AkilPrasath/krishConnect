@@ -164,7 +164,9 @@ class _StaffDrawerMenuState extends State<StaffDrawerMenu> {
                           context: context,
                           applicationName: "Krish Connect",
                           applicationVersion: "1.0.0+1",
-                          applicationIcon: FlutterLogo(),
+                          applicationIcon: Container(
+                            width:50,
+                            child:Image.asset("assets/images/icon.png",),),
                           children: [
                             Text(
                               "Developers",
