@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 DashboardScreen.id,
               );
             } else {
-              Navigator.pushNamed(
+              Navigator.pushReplacementNamed(
                 context,
                 StudentDetailsScreen.id,
               );

@@ -132,8 +132,7 @@ class _TrackStudentsPageState extends State<TrackStudentsPage> {
                                 return InkWell(
                                   borderRadius: BorderRadius.circular(20),
                                   onTap: () {
-                                    bottomSheet(
-                                        context, snapshot.data[index].id);
+                                    bottomSheet(context, list[index].id);
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),

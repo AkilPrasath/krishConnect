@@ -1,5 +1,6 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:krish_connect/UI/login.dart';
 
 import 'package:krish_connect/UI/student/dashboard/student_dashboard_screen.dart';
 import 'package:krish_connect/data/student.dart';
@@ -109,9 +110,15 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: InkWell(
-              onTap: () {
+              onTap: () async {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
+                } else {
+                  Student student = await getIt.getAsync<Student>();
+                  student.clearData();
+                  await getIt<Authentication>().logoutUser();
+
+                  Navigator.pushReplacementNamed(context, LoginScreen.id);
                 }
               },
               child: Icon(

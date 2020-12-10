@@ -75,9 +75,15 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: InkWell(
-              onTap: () {
+              onTap: () async {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
+                } else {
+                  Staff staff = await getIt.getAsync<Staff>();
+                  staff.clearData();
+                  await getIt<Authentication>().logoutUser();
+
+                  Navigator.pushReplacementNamed(context, LoginScreen.id);
                 }
               },
               child: Icon(
