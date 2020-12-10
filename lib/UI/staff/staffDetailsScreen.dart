@@ -82,7 +82,6 @@ class _StaffDetailsScreenState extends State<StaffDetailsScreen> {
                   Staff staff = await getIt.getAsync<Staff>();
                   staff.clearData();
                   await getIt<Authentication>().logoutUser();
-
                   Navigator.pushReplacementNamed(context, LoginScreen.id);
                 }
               },
