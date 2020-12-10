@@ -52,6 +52,7 @@ class StudentDatabase {
       "rollno": student.rollno,
       "section": student.section,
       "semester": student.semester,
+      "time":DateTime.now(),
     });
   }
 
