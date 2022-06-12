@@ -19,7 +19,9 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.8.0 <3.0.0"
-
+  flutter: 1.20.4
+#NOTE: THE PROJECT IS NOT UPDATED TO THE LATEST FLUTTER VERSIONS.
+#NOTE: TO RUN THIS PROJECT SWITCH TO THIS SPECIFIC FLUTTER VERSION (1.20.4) ELSE THE PROJECT WILL BREAK.
 dependencies:
   flutter:
     sdk: flutter
